@@ -1,3 +1,4 @@
 node_modules/
 clientes/*/dist/
 graphify-out/
+clientes/*/qa/

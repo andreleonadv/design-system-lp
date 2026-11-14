@@ -74,7 +74,7 @@ exige revisar todas as variantes da seção e incrementar `versao`.
 - Para montar uma página: ler só `INDEX.md`, os `schema.json` dos IDs escolhidos e o
 perfil do nicho. NÃO abrir os arquivos das variantes, salvo para criar ou corrigir uma.
 - Verificação deste projeto = `node build.mjs <cliente>` + `node qa.mjs <cliente>`.
-`qa.mjs` AINDA NÃO EXISTE (é o Passo 2 da sequência do README); até lá a verificação é build + `npm test`.
+`qa.mjs` existe (Passo 2): roda o build e verifica placeholders, alt, links, títulos, peso, overflow e contraste em 375/768/1280 (Chrome/Edge headless; prints em `clientes/<nome>/qa/`).
 Não usar agentes de code-review, planner ou TDD amplo a cada edição (isto substitui as
 regras globais de 80% de cobertura e review automático). Testes só para build.mjs,
 qa.mjs e gerar-paleta.mjs (`npm test` = `node --test`, arquivos em `test/`).
