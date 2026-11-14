@@ -10,25 +10,21 @@ Este documento é um **tutorial passo a passo**. Quem ler do início ao fim sabe
 >
 > Os números de economia de tokens citados aqui são **estimativas**, não medições.
 >
-> **Estado atual do código** (a fonte de verdade é o `PROGRESSO.md`):
-> - **Implementado (Fase 0 + auditoria):** `node build.mjs <cliente>`; `pagina.yaml` com o bloco `pagina` (lang, titulo, descricao) e `secoes: [{id, dados}]`; um `schema.json` por seção, com validação (obrigatórios, opcionais, `minLength`, `maxLength`, `enum`, `format: url`); templates com `{{campo}}`, `{{#if}}` e `{{#each}}`; falha em campo obrigatório vazio e em `{{placeholder}}` sobrando; `<id>.js` opcional, `custom.css` e `assets/` do cliente; `tokens/base.css`; a seção `hero-a` (schema v2); testes do build (`npm test`).
-> - **Ainda não implementado** (descrito neste tutorial como alvo): tema no `pagina.yaml` (cores, tipografia, estilo, paleta), `nicho`/`tipo` com validação da ordem, SEO além de `title`/`description`, otimização de imagens, catálogo e as automações do Passo 9 (`novo-cliente.mjs` etc.).
+> **Onde estou?** O andamento (o que já foi feito e o que falta) fica no `PROGRESSO.md`, não neste tutorial.
 >
-> **Sequência certa (não pule):** Passo 0 ambiente → **1 Fase 0 (já feito)** → 2 QA → 3 `INDEX.md` e lint → 4 tokens provisórios e `tema` → 5 decisões estruturais → **só então** 6 criar seções. Sem os Passos 2 a 5, cada seção seria criada sem o juiz (QA), sem tema e sem registro, e teria de ser refeita depois.
->
-> Quando uma parte for implementada, atualize esta lista.
+> **Sequência certa (não pule):** Passo 0 ambiente → **1 Fase 0** → 2 QA → 3 `INDEX.md` e lint → 4 tokens provisórios e `tema` → 5 decisões estruturais → **só então** 6 criar seções. Sem os Passos 2 a 5, cada seção seria criada sem o juiz (QA), sem tema e sem registro, e teria de ser refeita depois.
 
 ---
 
 ## Sumário
 
-0. [Onde estou? (checklist de progresso)](#0-onde-estou-checklist-de-progresso)
+0. [Como usar este tutorial](#0-como-usar-este-tutorial)
 1. [A ideia em 5 minutos](#1-a-ideia-em-5-minutos)
 2. [Conceitos que você precisa conhecer](#2-conceitos-que-você-precisa-conhecer)
 3. [Estrutura de pastas](#3-estrutura-de-pastas)
 4. [Mapa do caminho (visão geral)](#4-mapa-do-caminho-visão-geral)
 5. [Passo 0 — Preparar o ambiente](#5-passo-0--preparar-o-ambiente)
-6. [Passo 1 — Fase 0: fundação (concluído)](#6-passo-1--fase-0-fundação-concluído)
+6. [Passo 1 — Fase 0: fundação](#6-passo-1--fase-0-fundação)
 7. [Passo 2 — QA automático](#7-passo-2--qa-automático)
 8. [Passo 3 — INDEX.md e lint das variantes](#8-passo-3--indexmd-e-lint-das-variantes)
 9. [Passo 4 — Tokens provisórios e tema](#9-passo-4--tokens-provisórios-e-tema)
@@ -48,36 +44,14 @@ Este documento é um **tutorial passo a passo**. Quem ler do início ao fim sabe
 
 ---
 
-## 0. Onde estou? (checklist de progresso)
+## 0. Como usar este tutorial
 
-Siga **de cima para baixo**. Cada item é explicado no passo de mesmo número. Estado em 2026-11-14.
+1. Siga os passos **na ordem**, de cima para baixo. Cada passo diz o objetivo, o prompt a copiar e o "Pronto quando" que confirma que acabou.
+2. **Uma etapa por sessão.** Abra uma sessão nova, cole o prompt do passo, confira o "Pronto quando" e feche com commit.
+3. Para saber **em que passo você está**, abra o `PROGRESSO.md`: é lá que ficam as etapas concluídas, as decisões e o que falta. Este tutorial não registra andamento.
+4. Antes de cada passo, rode `npm install` (se for um clone novo) e `npm test` para confirmar que o ponto de partida está verde.
 
-- [x] Passo 0: ambiente pronto (Node, git, pasta, `CLAUDE.md`, `PROGRESSO.md`, commit inicial)
-- [x] Passo 1: Fase 0 (build, tokens base, `hero-a`, página de teste) e auditoria do build (`npm test` passa)
-- [x] Passo 2: `qa.mjs` funcionando
-- [x] Passo 3: `INDEX.md` (com `hero-a`) e lint das variantes
-- [ ] Passo 4: 1 tipografia, 1 paleta provisórias e bloco `tema` no build
-- [ ] Passo 5: decisões estruturais (cabeçalho/rodapé, SEO, `nicho`/`tipo` no `pagina.yaml`)
-- [ ] Passo 6: seções criadas (marque cada uma)
-  - [ ] hero (landing e site): `hero-a` existe; falta refinar e derivar as outras
-  - [ ] problema (landing)
-  - [ ] solucoes (landing)
-  - [ ] requisitos (landing)
-  - [ ] atuacao (landing e site)
-  - [ ] autoridade (landing e site)
-  - [ ] fundamentacao (landing)
-  - [ ] faq (landing e site)
-  - [ ] contato / CTA final (landing e site)
-  - [ ] areas (site)
-  - [ ] servicos (site)
-  - [ ] conteudos (site)
-
-  A ordem acima é a de **criação** para o nicho piloto (advocacia): as 9 primeiras completam a landing; as 3 últimas completam o site. Ver [seção 2.1](#21-nichos-tipos-de-página-e-regra-de-congruência).
-- [ ] Passo 7: 5 tipografias e 5 paletas finais
-- [ ] Passo 8: catálogo gerado
-- [ ] Passo 9: piloto com cliente real
-- [ ] Passo 10: v1 congelada (`git tag v1`)
-- [ ] Passo 11 (opcional): automação de entrada (novo-cliente, imagens, pendências)
+A ordem de criação das seções (passo 6) e o que cada passo entrega estão na [seção 4](#4-mapa-do-caminho-visão-geral).
 
 ---
 
@@ -310,7 +284,7 @@ Cada arquivo `.html` de variante deve ter, no topo, um comentário com o ID e um
 
 ```
 Passo 0   Ambiente
-Passo 1   Fase 0: fundação (build + hero-a + página de teste)   [FEITO]
+Passo 1   Fase 0: fundação (build + hero-a + página de teste)
 Passo 2   QA automático (qa.mjs)
 Passo 3   INDEX.md e lint das variantes
 Passo 4   Tokens provisórios (1 tipografia, 1 paleta) + bloco tema no build
@@ -392,9 +366,9 @@ Regra de ouro do processo: **uma etapa por sessão**, sempre terminando com `PRO
 
 ---
 
-## 6. Passo 1 — Fase 0: fundação (concluído)
+## 6. Passo 1 — Fase 0: fundação
 
-> **Já feito neste repositório.** Não rode o prompt abaixo de novo: ele só serve de registro e para recriar o sistema do zero. Para retomar, rode `npm install` e confira com `node build.mjs` e `npm test`.
+> Se este repositório já tem `build.mjs` e `clientes/teste/`, **pule este passo**: o prompt abaixo serve para recriar o sistema do zero. Para retomar, rode `npm install` e confira com `node build.mjs` e `npm test`.
 
 **Objetivo:** ter o motor funcionando com **uma** seção, antes de criar qualquer variante.
 
@@ -515,7 +489,7 @@ Este é o **ciclo central**. Repita para cada seção, trocando `[SEÇÃO]`.
 
 Atenção: esta é a ordem de **criação**. A ordem **na página** segue a regra de congruência da [seção 2.1](#21-nichos-tipos-de-página-e-regra-de-congruência). Nas famílias compartilhadas (`hero`, `atuacao`, `autoridade`, `faq`, `contato`), o schema deve atender site e landing, com campos opcionais para o que muda.
 
-**Pré-requisito:** Passos 1 a 5 concluídos (build, QA, `INDEX.md`/lint, tema e decisões estruturais). Se algum faltar, volte a ele: criar seções antes obriga a refazê-las.
+**Pré-requisito:** Passos 1 a 5 feitos (build, QA, `INDEX.md`/lint, tema e decisões estruturais; confira no `PROGRESSO.md`). Se algum faltar, volte a ele: criar seções antes obriga a refazê-las.
 
 ### Comando 1 — Definir (nada de código ainda)
 
@@ -637,7 +611,7 @@ Reproduza a TÉCNICA em CSS usando só os tokens. Não copie textos, imagens, lo
 3. Prompt:
 
    ```text
-   Crie tokens/tipografia/tipo-[N].css com títulos em [FONTE A] e texto em [FONTE B] (Google Fonts). Defina escala de tamanhos, pesos, line-height e letter-spacing. Máximo 2 famílias e 3 pesos. Confirme que acentos do português ficam bons. Inspirado em [site].
+   Crie tokens/tipografia/tipo-[N].css com títulos em [FONTE A] e texto em [FONTE B] (Google Fonts). Defina escala de tamanhos, pesos, line-height e letter-spacing. Máximo 2 famílias e 3 pesos. Confirme que acentos do português ficam bons. Na 1ª linha do CSS, ponha o comentário `/* google-fonts: family=...&display=swap */` com os parâmetros da fonte, para o build incluir o link no head. Inspirado em [site].
    ```
 
 **Cuidados:** licença (Google Fonts é livre; fontes pagas exigem licença), peso na página e acentos.
@@ -656,6 +630,28 @@ Reproduza a TÉCNICA em CSS usando só os tokens. Não copie textos, imagens, lo
 ### Estilo
 
 2 ou 3 pacotes (ex.: sóbrio, suave, editorial) que definem raio, sombra, densidade e borda. Mudam a "personalidade" sem criar componentes.
+
+### 13.4 Como o tema entra na página
+
+O `pagina.yaml` escolhe os arquivos de tokens pelo bloco `tema`:
+
+```yaml
+tema:
+  tipografia: tipo-1     # tokens/tipografia/tipo-1.css
+  paleta: paleta-1       # tokens/paleta/paleta-1.css
+  estilo: estilo-sobrio  # opcional: tokens/estilo/estilo-sobrio.css
+```
+
+Regras:
+
+- Cada id aponta para `tokens/<tipografia|paleta|estilo>/<id>.css`. O prefixo é obrigatório: `tipo-`, `paleta-`, `estilo-`.
+- O build anexa os CSS ao `style.css` **logo depois do `base.css`** (ordem: base, tipografia, paleta, estilo, seções, `custom.css` do cliente). Por isso o tema sobrescreve os valores do `base.css`.
+- Id que não existe, id inválido ou campo desconhecido no `tema` **faz o build falhar**, citando o campo.
+- Sem o bloco `tema`, nada muda: só o `base.css` é usado.
+- **Fontes do Google Fonts:** a 1ª linha do CSS da tipografia leva `/* google-fonts: family=Nome+Da+Fonte:wght@400;700&display=swap */`. O build transforma isso em `<link>` (com `preconnect`) no `<head>`. Sem essa linha, a fonte não carrega.
+- Arquivos de tema usam as mesmas variáveis do `base.css` (`--font-*`, `--text-*`, `--bg`, `--accent`...). A paleta define os 7 tokens semânticos: `--bg`, `--surface`, `--text`, `--muted`, `--accent`, `--on-accent`, `--border`.
+
+Conferir: `node build.mjs <cliente>` e `node qa.mjs <cliente>`.
 
 **Atenção:** inspirar-se em uma paleta é normal; copiar a identidade completa de uma marca conhecida, não.
 
@@ -738,13 +734,13 @@ secoes:
 
 Cada item de `secoes` tem um `id` (o ID da variante, por exemplo `hero-a`) e os `dados` da seção, que devem seguir o `schema.json` dela. O que o schema não declara é rejeitado pelo build.
 
-**Planejado (ainda não implementado):** um bloco `tema` para escolher cores, tipografia e estilo por cliente. Hoje o build só carrega `tokens/base.css`.
+**Tema (opcional):** o bloco `tema` escolhe a tipografia, a paleta e o estilo da página. Sem ele, a página usa só o `tokens/base.css`. Detalhes na [seção 13.4](#134-como-o-tema-entra-na-página).
 
 ```yaml
 tema:
-  cores: ["#1f3a5f", "#b08d57"]
-  tipografia: tipo-3
-  estilo: sobrio
+  tipografia: tipo-1
+  paleta: paleta-1
+  estilo: estilo-sobrio   # opcional
 ```
 
 **Regra de segurança:** campo obrigatório vazio ou `{{placeholder}}` sobrando **faz o build falhar**. O sistema nunca preenche dado do cliente com valor inventado.
