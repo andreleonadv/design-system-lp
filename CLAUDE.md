@@ -3,7 +3,7 @@
 ## Objetivo
 
 Gerar landings de clientes a partir de um `pagina.yaml` com IDs de variantes
-(ex.: hero-b, como-funciona-c, cards-a, tipo-3, estilo-sobrio) + copy.
+(ex.: hero-b, atuacao-c, faq-a, tipo-3, estilo-sobrio) + copy.
 Prioridade: economia de tokens por página nova.
 
 ## Stack
@@ -21,7 +21,23 @@ Saída: `clientes/<nome>/dist/` independente do sistema.
 --accent, --on-accent, --border). Nunca hex direto.
 - Campo obrigatório vazio ou `{{placeholder}}` sobrando = o build FALHA.
 Nunca preencher dado do cliente com valor inventado.
-- Toda variante nova entra no `INDEX.md` (1 linha: o que é, quando usar, limites).
+- Toda variante nova entra no `INDEX.md` (1 linha: o que é, quando usar, limites, se exige imagem).
+
+## Estrutura das páginas (nicho: advocacia — Bancário, Imobiliário, Consumidor)
+
+Famílias de seção (pasta em `secoes/`): hero, problema, solucoes, requisitos,
+atuacao, autoridade, fundamentacao, faq, contato (landing) + areas, servicos,
+conteudos (só site). hero, atuacao, autoridade, faq e contato servem aos dois tipos
+(schema com campos opcionais para o que muda).
+
+- Landing (9, nesta ordem): hero → problema → solucoes → requisitos → atuacao
+(com CTA intermediário) → autoridade → fundamentacao → faq → contato.
+- Site (8, nesta ordem): hero → areas → servicos → atuacao → autoridade →
+conteudos → faq → contato.
+- Regra de congruência: não reordenar nem pular seção sem decisão do usuário.
+- Nunca inventar legislação, jurisprudência, número de OAB, credencial ou
+depoimento: vêm do briefing e são conferidos pelo advogado. Sem promessa de
+resultado; seguir as regras de publicidade da OAB.
 
 
 

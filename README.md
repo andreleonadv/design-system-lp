@@ -53,14 +53,20 @@ Marque conforme avançar. Cada item é explicado nos passos abaixo.
 - [ ] Passo 2: `qa.mjs` funcionando
 - [ ] Passo 3: 1 tipografia e 1 paleta provisórias
 - [ ] Passo 4: seções criadas (marque cada uma)
-  - [ ] cabeçalho
-  - [ ] hero
-  - [ ] como funciona
-  - [ ] cards
-  - [ ] prova social
-  - [ ] FAQ
-  - [ ] CTA final
-  - [ ] rodapé
+  - [ ] hero (landing e site)
+  - [ ] problema (landing)
+  - [ ] solucoes (landing)
+  - [ ] requisitos (landing)
+  - [ ] atuacao (landing e site)
+  - [ ] autoridade (landing e site)
+  - [ ] fundamentacao (landing)
+  - [ ] faq (landing e site)
+  - [ ] contato / CTA final (landing e site)
+  - [ ] areas (site)
+  - [ ] servicos (site)
+  - [ ] conteudos (site)
+
+  A ordem acima é a de **criação**: as 9 primeiras completam a landing; as 3 últimas completam o site. Ver [seção 2.1](#21-os-dois-tipos-de-página-e-a-regra-de-congruência).
 - [ ] Passo 5: 5 tipografias e 5 paletas finais
 - [ ] Passo 6: catálogo gerado
 - [ ] Passo 7: piloto com cliente real
@@ -73,7 +79,7 @@ Marque conforme avançar. Cada item é explicado nos passos abaixo.
 
 **Problema:** criar muitas landing pages de clientes por dia sem gastar uma montanha de tokens, mantendo qualidade e consistência.
 
-**Solução:** uma biblioteca de peças prontas (seções com várias variantes, tipografias, paletas). Para cada cliente você apenas **escolhe os IDs** (`hero-b`, `como-funciona-c`, `cards-a`…) e **preenche o conteúdo**. Um script monta a página.
+**Solução:** uma biblioteca de peças prontas (seções com várias variantes, tipografias, paletas). Para cada cliente você apenas **escolhe os IDs** (`hero-b`, `atuacao-c`, `faq-a`…) e **preenche o conteúdo**. Um script monta a página.
 
 **Analogia:** as seções são peças de Lego. A página é a montagem. O arquivo `pagina.yaml` é a planta que diz quais peças usar e em que ordem.
 
@@ -98,7 +104,9 @@ Marque conforme avançar. Cada item é explicado nos passos abaixo.
 |---|---|---|
 | **Token** | Uma decisão visual guardada em variável CSS | `--accent` (cor de destaque) |
 | **Token semântico** | Nomeado pela função, não pela aparência | `--accent`, não `--azul` |
-| **Seção** | Um bloco da página | hero, como funciona, cards |
+| **Seção** | Um bloco da página | hero, atuação, autoridade |
+| **Família de seção** | A pasta de uma seção em `secoes/`, com todas as suas variantes | `atuacao/` (`atuacao-a`, `atuacao-b`…) |
+| **Tipo de página** | Estrutura fixa de seções: `site` (8) ou `landing` (9) | ver seção 2.1 |
 | **Variante** | Uma versão estrutural de uma seção | `hero-a`, `hero-b`, `hero-c` |
 | **ID** | Nome único de uma variante, também usado como nome de arquivo | `hero-b` |
 | **Schema** (contrato) | Lista dos campos que uma seção aceita; igual para todas as variantes | `titulo`, `subtitulo`, `cta` |
@@ -113,7 +121,7 @@ Marque conforme avançar. Cada item é explicado nos passos abaixo.
 ### As três camadas
 
 1. **Tokens:** cores, tipografia, raio, sombra, espaçamento.
-2. **Seções:** hero, como funciona, cards etc., cada uma com várias variantes e um schema comum.
+2. **Seções:** hero, problema, atuação, autoridade, FAQ etc., cada uma com várias variantes e um schema comum.
 3. **Composição:** o `pagina.yaml` de cada cliente.
 
 ### Regra de ouro dos contratos
@@ -125,6 +133,69 @@ Marque conforme avançar. Cada item é explicado nos passos abaixo.
 Cada variante tem seus próprios arquivos (`hero-a.html`, `hero-a.css`). Motivos: o modelo abre só o que precisa (economia), o build liga ID a arquivo sem procurar, e editar uma variante não arrisca as outras.
 
 **Resumo:** tokens (aparência), seções (estrutura), `pagina.yaml` (composição). Mesmo schema em todas as variantes. Um arquivo por variante.
+
+### 2.1 Os dois tipos de página e a regra de congruência
+
+O nicho inicial é **advocacia**, com as áreas **Direito Bancário, Imobiliário e do Consumidor**. O sistema monta dois tipos de página, cada um com estrutura e ordem fixas.
+
+**Tipo `site` (institucional): 8 seções**
+
+1. **Hero institucional:** apresentação do escritório, posicionamento e CTA.
+2. **Áreas de atuação:** Direito Bancário, Imobiliário e do Consumidor.
+3. **Serviços jurídicos:** serviços específicos de cada área.
+4. **Forma de atuação:** como é o atendimento e a análise jurídica.
+5. **Sobre o escritório:** apresentação institucional, advogados e credenciais.
+6. **Conteúdos jurídicos:** artigos do blog e informações educativas.
+7. **Perguntas frequentes (FAQ):** principais dúvidas.
+8. **Contato e CTA final:** convite ao contato e canais de atendimento.
+
+**Tipo `landing`: 9 seções**
+
+1. **Hero:** título H1, subtítulo, imagem contextual quando pertinente e CTA.
+2. **Identificação do problema:** situações jurídicas com as quais o visitante pode se identificar.
+3. **Possíveis soluções jurídicas:** alternativas legais.
+4. **Quem pode se beneficiar:** requisitos e condições para usar as medidas jurídicas.
+5. **Como funciona a atuação:** etapas do atendimento e CTA intermediário.
+6. **Autoridade profissional:** advogado, OAB e credenciais.
+7. **Fundamentação jurídica:** legislação, jurisprudência e explicações relevantes.
+8. **Perguntas frequentes (FAQ):** dúvidas específicas sobre o serviço.
+9. **Encerramento e CTA final:** conclusão e convite ao contato.
+
+**Regra de congruência (a ordem não muda):**
+
+- **Site:** Apresentação → Áreas → Serviços → Atuação → Autoridade → Conteúdo → Dúvidas → Contato.
+- **Landing:** Reconhecimento → Problema → Solução → Requisitos → Processo → Autoridade → Fundamentação → Dúvidas → Conversão.
+
+Não reordene nem pule seção sem decidir isso conscientemente. **Planejado (ainda não implementado):** um campo `tipo: site | landing` no bloco `pagina` do `pagina.yaml`, para o build e o QA validarem a ordem e as seções obrigatórias de cada tipo.
+
+**Famílias de seção.** Cada seção da estrutura vira uma **família** (a pasta em `secoes/`), com seus IDs de variante (`hero-a`, `atuacao-b`…). Cinco famílias servem aos dois tipos de página, o que reduz o trabalho de criação:
+
+| Família (pasta) | Site institucional | Landing page |
+|---|---|---|
+| `hero` | 1. Hero institucional | 1. Hero |
+| `problema` | — | 2. Identificação do problema |
+| `solucoes` | — | 3. Possíveis soluções jurídicas |
+| `requisitos` | — | 4. Quem pode se beneficiar |
+| `areas` | 2. Áreas de atuação | — |
+| `servicos` | 3. Serviços jurídicos | — |
+| `atuacao` | 4. Forma de atuação | 5. Como funciona a atuação (com CTA intermediário) |
+| `autoridade` | 5. Sobre o escritório | 6. Autoridade profissional |
+| `conteudos` | 6. Conteúdos jurídicos | — |
+| `fundamentacao` | — | 7. Fundamentação jurídica |
+| `faq` | 7. FAQ | 8. FAQ |
+| `contato` | 8. Contato e CTA final | 9. Encerramento e CTA final |
+
+Total: **12 famílias**. **Compartilhadas:** `hero`, `atuacao`, `autoridade`, `faq`, `contato`. **Só landing:** `problema`, `solucoes`, `requisitos`, `fundamentacao`. **Só site:** `areas`, `servicos`, `conteudos`.
+
+**Famílias compartilhadas:** o schema deve atender os dois tipos, usando campos **opcionais** para o que muda (imagem no `hero`, CTA intermediário em `atuacao`, vários profissionais em `autoridade`, canais de atendimento em `contato`). Se os dois usos divergirem demais, divida a família em duas no Comando 1 da seção.
+
+**Decisões em aberto** (confirme antes de criar as seções):
+
+1. Os **nomes das famílias** acima são propostas minhas, derivadas da sua estrutura.
+2. **Cabeçalho e rodapé** não constam na sua estrutura. Se forem necessários (menu, links legais, aviso da OAB), serão elementos fixos de apoio; decida se entram.
+3. Se `hero`, `atuacao`, `autoridade`, `faq` e `contato` realmente ficam compartilhadas ou se alguma deve ser dividida.
+
+**Resumo:** há dois tipos de página (site com 8 seções e landing com 9), com ordem fixa pela regra de congruência. As seções viram 12 famílias, 5 delas compartilhadas. Os nomes das famílias e a presença de cabeçalho e rodapé ainda precisam da sua confirmação.
 
 ---
 
@@ -149,8 +220,8 @@ design-system-lp/
       hero-a.html  hero-a.css  [hero-a.js opcional]
       hero-b.html  hero-b.css
       hero-c.html  hero-c.css
-    como-funciona/ ...
-    cards/ ...
+    problema/ solucoes/ requisitos/ atuacao/ autoridade/
+    fundamentacao/ faq/ contato/ areas/ servicos/ conteudos/   # 12 famílias (ver seção 2.1)
   build.mjs              # lê pagina.yaml e gera o HTML final
   qa.mjs                 # verificações automáticas
   catalogo/              # GERADO: mostruário de todas as variantes
@@ -219,7 +290,7 @@ Regra de ouro do processo: **uma etapa por sessão**, sempre terminando com `PRO
    ```
 
 3. Decidir três coisas (anote no `PROGRESSO.md`):
-   - **nicho inicial** (sugestão: um só, por exemplo advocacia);
+   - **nicho inicial** (definido: advocacia, com as áreas Direito Bancário, Imobiliário e do Consumidor);
    - **CTA padrão** (por exemplo WhatsApp com mensagem pré-preenchida);
    - **2 ou 3 referências visuais** de páginas que você admira.
 
@@ -322,7 +393,9 @@ Este é o **ciclo central**. Repita para cada seção, trocando `[SEÇÃO]`.
 
 > Se você viu um roteiro de 3 comandos em outro lugar (por exemplo numa conversa anterior), a diferença é só esta: o refinamento com referências (Comando 3) foi acrescentado, e o antigo "Comando 3" virou o Comando 4.
 
-**Ordem das seções:** cabeçalho, hero, como funciona, cards, prova social, FAQ, CTA final, rodapé. Comece pelo **hero**, que já existe como base desde a Fase 0, e siga a lista. Faça **uma seção por sessão**, ou duas se forem simples (por exemplo rodapé e CTA final).
+**Ordem de criação das seções** (completa a landing primeiro, depois as exclusivas do site): `hero`, `problema`, `solucoes`, `requisitos`, `atuacao`, `autoridade`, `fundamentacao`, `faq`, `contato`; depois `areas`, `servicos`, `conteudos`. Comece pelo **hero**, que já existe como base desde a Fase 0, e siga a lista. Faça **uma seção por sessão**, ou duas se forem simples (por exemplo `faq` e `contato`).
+
+Atenção: esta é a ordem de **criação**. A ordem **na página** segue a regra de congruência da [seção 2.1](#21-os-dois-tipos-de-página-e-a-regra-de-congruência). Nas famílias compartilhadas (`hero`, `atuacao`, `autoridade`, `faq`, `contato`), o schema deve atender site e landing, com campos opcionais para o que muda.
 
 **Pré-requisito:** Passos 1 a 3 concluídos.
 
@@ -417,7 +490,7 @@ Reproduza a TÉCNICA em CSS usando só os tokens. Não copie textos, imagens, lo
 - Uma variante por sessão.
 - Feedback **específico** vale mais que "melhore": *"título grande demais no mobile; aumente o espaço do botão"*.
 - Limite de 2 a 3 rodadas por variante, e uma definição de pronto: build e QA passam e você aprovou no catálogo.
-- Capriche mais nas seções que aparecem em toda página (hero, cards, CTA) e aceite acabamento mais simples nas outras.
+- Capriche mais nas seções que aparecem em toda página (hero, atuação, contato) e aceite acabamento mais simples nas outras.
 
 **Resumo:** referência é fonte de técnica, nunca de conteúdo. Peça o efeito com o prompt acima, mantenha leve e acessível, e limite as rodadas.
 
@@ -487,7 +560,7 @@ Crie `clientes/<nome>/briefing.md` e a pasta `assets/` com:
 - contatos e CTA;
 - logo, fotos e cores da marca (se houver);
 - textos já aprovados;
-- regras do nicho (ex.: advocacia e saúde têm limites de publicidade; **não invente número, depoimento ou promessa**).
+- regras do nicho. Na advocacia, a publicidade segue as normas da OAB (por exemplo o Código de Ética e Disciplina e o Provimento 205/2021 do CFOAB; confirme a versão vigente com o advogado responsável): sem promessa de resultado e sem captação indevida de clientela. **Legislação, jurisprudência, número de OAB, credenciais e depoimentos vêm do briefing e são conferidos pelo advogado; o modelo nunca os inventa.**
 
 ### 13.2 Escolher no catálogo
 
@@ -501,8 +574,9 @@ Abra o catálogo e anote:
 Sessão nova:
 
 ```text
-Crie a landing do cliente [NOME] (nicho [X]).
-IDs: cabecalho-a, hero-b, como-funciona-c, cards-a, prova-social-a, faq-a, cta-a, rodape-a
+Crie a [landing | site] do cliente [NOME] (nicho advocacia, área: [bancário | imobiliário | consumidor]).
+IDs, na ordem da regra de congruência (exemplo de landing):
+hero-b, problema-a, solucoes-a, requisitos-a, atuacao-c, autoridade-a, fundamentacao-a, faq-a, contato-a
 Tipografia: tipo-3 | Estilo: sobrio | Paleta: gerar a partir de #[COR1] e #[COR2]
 Material em clientes/[nome]/briefing.md e assets/.
 Regras: leia só INDEX.md e os schema.json dos IDs escolhidos; não abra os arquivos das variantes. Não invente dado do cliente: se faltar um campo obrigatório, liste o que falta e pergunte. Escreva o pagina.yaml, rode build e qa, corrija o que o QA apontar e me diga o resultado.
@@ -525,7 +599,7 @@ secoes:
       cta:
         texto: "Falar no WhatsApp"
         url: "https://wa.me/..."
-  - id: como-funciona-c      # exemplo: esta variante ainda não existe
+  - id: atuacao-c            # exemplo: esta variante ainda não existe
     dados:
       passos:
         - { titulo: "...", texto: "..." }
@@ -569,7 +643,7 @@ git commit -m "feat: landing <nome>"
 
 **Todas as seções precisam estar preenchidas?** Não. A página tem só as seções listadas no `pagina.yaml`.
 
-- **Nível da página:** recomenda-se um mínimo fixo de **hero, CTA e rodapé**. O resto é opcional (sem depoimentos, não coloque `prova-social`).
+- **Nível da página:** cada tipo tem estrutura completa (site: 8 seções; landing: 9), na ordem da [regra de congruência](#21-os-dois-tipos-de-página-e-a-regra-de-congruência). Omita uma seção só quando não houver material aprovado para ela (por exemplo `fundamentacao` sem legislação e jurisprudência conferidas pelo advogado), e nunca a preencha com texto inventado. O mínimo absoluto é `hero` e `contato`.
 - **Nível do campo:** numa seção escolhida, os campos **obrigatórios** do schema precisam estar preenchidos, senão o build falha. Os **opcionais** podem ficar vazios, e nesse caso o elemento correspondente some em vez de aparecer com texto de exemplo (**planejado:** o build atual ainda não suporta isso; hoje todo `{{campo}}` do HTML precisa ter valor).
 - **A variante depende do material.** Sem foto boa, escolha uma variante que não exija imagem (o `INDEX.md` informa se cada variante exige).
 
@@ -589,7 +663,7 @@ git commit -m "feat: landing <nome>"
 4. Fotos do cliente, da equipe e do escritório precisam vir do cliente. Imagens de banco ou geradas por IA servem só de apoio e, em advocacia e saúde, costumam enfraquecer a credibilidade; confira também a licença.
 5. **Placeholder nunca vai ao ar:** o build precisa barrar.
 
-**Resumo:** só entram as seções listadas, com o mínimo hero, CTA e rodapé. Copy vem do briefing, com origem marcada e pendências listadas. Imagens ficam em `assets/` com `alt` obrigatório, e nada de placeholder em produção.
+**Resumo:** cada tipo de página tem estrutura completa (site 8, landing 9), com o mínimo absoluto `hero` e `contato`. Copy vem do briefing, com origem marcada e pendências listadas. Imagens ficam em `assets/` com `alt` obrigatório, e nada de placeholder em produção.
 
 **Resumo:** briefing, escolha de IDs no catálogo, prompt de criação, `pagina.yaml` com a copy, build e QA, revisão sua, commit. Nunca invente dado do cliente.
 
