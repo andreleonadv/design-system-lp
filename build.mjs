@@ -4,9 +4,10 @@
 // e gera clientes/<nome>/dist/{index.html,style.css[,script.js][,assets/]}.
 // Falha em campo obrigatório vazio e em {{placeholder}} sobrando.
 //
-// Template das variantes (<id>.html):
-// Bloco opcional `tema` no pagina.yaml: {tipografia: tipo-1, paleta: paleta-1, estilo: estilo-x}.
+// Blocos do pagina.yaml: pagina (titulo, lang, descricao + SEO opcional), tema, cabecalho, rodape,
+// nicho + tipo (+ dispensar) para validar a ordem das seções, secoes.
 //
+// Template das variantes (<id>.html):
 //   {{campo}} / {{a.b}}            valor escapado; vazio ou ausente = erro
 //   {{#if campo}}...{{/if}}        só renderiza se o campo (opcional) tiver valor
 //   {{#each lista}}...{{/each}}    repete para cada item; dentro, {{campo}} lê do item
@@ -155,9 +156,9 @@ export function renderizar(template, dados, rotulo, erros) {
 
 const lerOpcional = (arq) => (existsSync(arq) ? readFileSync(arq, 'utf8') : '');
 
-export function montarSecao(item, indice) {
+export function montarSecao(item, indice, bloco) {
   const erros = [];
-  const rotulo = `secoes[${indice}] (${item?.id ?? '?'})`;
+  const rotulo = `${bloco ?? `secoes[${indice}]`} (${item?.id ?? '?'})`;
   const m = /^([a-z0-9-]+)-([a-z])$/.exec(item?.id ?? '');
   if (!m) return { erros: [`${rotulo}: id inválido (esperado <secao>-<letra>)`] };
 
@@ -218,46 +219,214 @@ export function carregarTema(tema, rotulo = 'tema') {
   return { erros, css: partes.join('\n'), fontes };
 }
 
-/** `extras.customCss`: sobrescritas do cliente, anexadas depois do CSS das seções. */
-export function montarPagina(pagina, extras = {}) {
+const SCHEMA_PAGINA = {
+  type: 'object',
+  required: ['titulo', 'lang', 'descricao'],
+  properties: {
+    titulo: { type: 'string', minLength: 1, maxLength: 70 },
+    lang: { type: 'string', minLength: 2 },
+    descricao: { type: 'string', minLength: 1, maxLength: 160 },
+    url: { type: 'string', minLength: 1, format: 'url' },
+    nome_site: { type: 'string', minLength: 1 },
+    robots: { type: 'string', enum: ['index', 'noindex'] },
+    favicon: { type: 'string', minLength: 1 },
+    imagem_social: {
+      type: 'object',
+      required: ['src', 'alt'],
+      properties: { src: { type: 'string', minLength: 1 }, alt: { type: 'string', minLength: 1 } },
+    },
+    negocio: {
+      type: 'object',
+      required: ['tipo', 'nome'],
+      properties: {
+        tipo: { type: 'string', enum: ['Organization', 'LocalBusiness', 'LegalService'] },
+        nome: { type: 'string', minLength: 1 },
+        telefone: { type: 'string', minLength: 1 },
+        email: { type: 'string', minLength: 1 },
+        endereco: { type: 'string', minLength: 1 },
+        redes: { type: 'array', maxItems: 6, items: { type: 'string', format: 'url' } },
+      },
+    },
+  },
+};
+const CAMPOS_RAIZ = ['pagina', 'tema', 'secoes', 'cabecalho', 'rodape', 'nicho', 'tipo', 'dispensar'];
+const ASSET = /^assets\/[^\\]+$/;
+const ABSOLUTA = /^https?:\/\//i;
+
+/** Valida o bloco `pagina` (título, descrição e SEO). `pastaCliente` (opcional) confere se os arquivos existem. */
+export function validarPagina(p, pastaCliente) {
   const erros = [];
-  for (const campo of ['titulo', 'lang', 'descricao']) {
-    if (!pagina?.pagina?.[campo] || String(pagina.pagina[campo]).trim() === '') {
-      erros.push(`pagina.${campo}: campo obrigatório vazio`);
+  validar(p ?? undefined, SCHEMA_PAGINA, 'pagina', erros);
+  if (erros.length || !p) return erros;
+  if (p.url && !/^https:\/\//i.test(p.url.trim())) erros.push('pagina.url: deve começar com https://');
+  if (p.imagem_social && !p.url) erros.push('pagina.imagem_social: exige pagina.url (a imagem social precisa de endereço absoluto)');
+  for (const [campo, valor] of [['favicon', p.favicon], ['imagem_social.src', p.imagem_social?.src]]) {
+    if (!valor || ABSOLUTA.test(valor)) continue;
+    if (!ASSET.test(valor)) erros.push(`pagina.${campo}: use https://... ou um arquivo dentro de assets/ (ex.: assets/arquivo.png)`);
+    else if (pastaCliente && !existsSync(join(pastaCliente, valor))) erros.push(`pagina.${campo}: arquivo "${valor}" não existe na pasta do cliente`);
+  }
+  return erros;
+}
+
+const jsonSeguro = (obj) => JSON.stringify(obj).replace(/</g, '\\u003c');
+
+function jsonLd(p) {
+  const n = p.negocio;
+  if (!n) return '';
+  const dados = { '@context': 'https://schema.org', '@type': n.tipo, name: n.nome };
+  if (p.url) dados.url = p.url.trim();
+  if (n.telefone) dados.telephone = n.telefone;
+  if (n.email) dados.email = n.email;
+  if (n.endereco) dados.address = { '@type': 'PostalAddress', streetAddress: n.endereco };
+  if (n.redes?.length) dados.sameAs = n.redes;
+  return `<script type="application/ld+json">${jsonSeguro(dados)}</script>\n`;
+}
+
+/** Meta tags de SEO (robots, canonical, Open Graph, Twitter, favicon, JSON-LD). Só emite o que tem dado. */
+export function montarSeo(p) {
+  const meta = (attr, nome, valor) => `<meta ${attr}="${nome}" content="${escapeHtml(valor)}">\n`;
+  const url = p.url?.trim();
+  let h = '';
+  if (p.robots === 'noindex') h += meta('name', 'robots', 'noindex, nofollow');
+  if (url) h += `<link rel="canonical" href="${escapeHtml(url)}">\n`;
+  h += meta('property', 'og:type', 'website') + meta('property', 'og:title', p.titulo) + meta('property', 'og:description', p.descricao);
+  h += meta('property', 'og:locale', String(p.lang).replace('-', '_'));
+  if (p.nome_site) h += meta('property', 'og:site_name', p.nome_site);
+  if (url) h += meta('property', 'og:url', url);
+  if (p.imagem_social) {
+    const src = ABSOLUTA.test(p.imagem_social.src) ? p.imagem_social.src : new URL(p.imagem_social.src, url.endsWith('/') ? url : `${url}/`).href;
+    h += meta('property', 'og:image', src) + meta('property', 'og:image:alt', p.imagem_social.alt) + meta('name', 'twitter:image', src);
+  }
+  h += meta('name', 'twitter:card', p.imagem_social ? 'summary_large_image' : 'summary');
+  if (p.favicon) h += `<link rel="icon" href="${escapeHtml(p.favicon)}">\n`;
+  return h + jsonLd(p);
+}
+
+const NICHO_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const familiaDe = (id) => /^([a-z0-9-]+)-[a-z]$/.exec(id ?? '')?.[1];
+
+/** Lê nichos/<nicho>/nicho.yaml. Devolve {erros, perfil}. */
+export function carregarNicho(nicho) {
+  if (typeof nicho !== 'string' || !NICHO_ID.test(nicho)) return { erros: [`nicho: nome inválido "${nicho}"`] };
+  const arq = join(RAIZ, 'nichos', nicho, 'nicho.yaml');
+  if (!existsSync(arq)) return { erros: [`nicho: "${nicho}" não existe (nichos/${nicho}/nicho.yaml)`] };
+  try {
+    return { erros: [], perfil: yaml.load(readFileSync(arq, 'utf8')) };
+  } catch (e) {
+    return { erros: [`nicho: YAML inválido em ${arq}: ${e.message}`] };
+  }
+}
+
+/**
+ * Valida as seções contra a `ordem` do tipo no nicho.yaml: só famílias do tipo, sem repetir,
+ * na ordem, e nenhuma faltando (exceto as listadas em `dispensar`, que nunca podem ser obrigatórias).
+ */
+export function validarOrdem(secoes, tipo, def, dispensar = []) {
+  const erros = [];
+  const ordem = def.ordem ?? [];
+  const obrig = def.obrigatorias ?? [];
+  const esperado = `ordem de "${tipo}": ${ordem.join(' → ')}`;
+  const usadas = secoes.map((s) => familiaDe(s?.id)).filter(Boolean);
+  const vistos = new Set();
+  for (const f of usadas) {
+    if (!ordem.includes(f)) erros.push(`secoes: família "${f}" não faz parte do tipo "${tipo}" (${esperado})`);
+    else if (vistos.has(f)) erros.push(`secoes: família "${f}" repetida`);
+    vistos.add(f);
+  }
+  for (const f of dispensar) {
+    if (!ordem.includes(f)) erros.push(`dispensar: "${f}" não faz parte do tipo "${tipo}"`);
+    else if (obrig.includes(f)) erros.push(`dispensar: "${f}" é obrigatória no tipo "${tipo}"`);
+    else if (vistos.has(f)) erros.push(`dispensar: "${f}" está dispensada mas aparece em secoes`);
+  }
+  for (const f of ordem) {
+    if (!vistos.has(f) && !dispensar.includes(f)) {
+      erros.push(`secoes: falta a seção "${f}" (${esperado}). Inclua, ou liste em dispensar se o usuário decidiu pular`);
     }
   }
-  if (!Array.isArray(pagina?.secoes) || pagina.secoes.length === 0) {
-    erros.push('secoes: lista obrigatória vazia');
-    return { erros };
+  const posicoes = usadas.filter((f) => ordem.includes(f)).map((f) => ordem.indexOf(f));
+  if (posicoes.some((v, i) => i > 0 && v < posicoes[i - 1])) erros.push(`secoes: fora de ordem (${esperado})`);
+  return erros;
+}
+
+/** Valida `nicho`/`tipo`/`dispensar` do pagina.yaml. `extras.perfilNicho` (opcional) substitui a leitura do arquivo. */
+function validarNichoTipo(pagina, extras) {
+  const { nicho, tipo, dispensar } = pagina;
+  if (nicho === undefined && tipo === undefined) {
+    return dispensar === undefined ? [] : ['dispensar: exige nicho e tipo'];
   }
+  if (!nicho || !tipo) return ['nicho e tipo devem ser informados juntos'];
+  if (typeof tipo !== 'string') return ['tipo: esperado texto (no YAML, ponha aspas em números e em yes/no)'];
+  if (dispensar !== undefined && (!Array.isArray(dispensar) || dispensar.some((d) => typeof d !== 'string'))) {
+    return ['dispensar: esperado lista de famílias (ex.: [faq])'];
+  }
+  const carregado = extras.perfilNicho ? { erros: [], perfil: extras.perfilNicho } : carregarNicho(nicho);
+  if (carregado.erros.length) return carregado.erros;
+  const def = carregado.perfil?.tipos?.[tipo];
+  if (!def) return [`tipo: "${tipo}" não existe no nicho "${nicho}" (tipos: ${Object.keys(carregado.perfil?.tipos ?? {}).join(', ')})`];
+  return validarOrdem(pagina.secoes, tipo, def, dispensar ?? []);
+}
 
-  const resultados = pagina.secoes.map((item, i) => montarSecao(item, i));
-  for (const r of resultados) erros.push(...r.erros);
-  const tema = carregarTema(pagina.tema);
-  erros.push(...tema.erros);
-  if (erros.length) return { erros };
+/** Cabeçalho/rodapé: bloco {id, dados} cuja família é fixa. Devolve null se o bloco não existe. */
+function montarBloco(item, familia) {
+  if (item === undefined || item === null) return null;
+  if (typeof item !== 'object' || Array.isArray(item) || familiaDe(item.id) !== familia) {
+    return { erros: [`${familia}: esperado {id: ${familia}-<letra>, dados: {...}}`] };
+  }
+  return montarSecao(item, 0, familia);
+}
 
-  const { lang, titulo, descricao } = pagina.pagina;
-  const js = [...new Set(resultados.map((r) => r.js).filter(Boolean))].join('\n');
-  const html = `<!doctype html>
+function montarHead(pagina, tema) {
+  const { lang, titulo, descricao } = pagina;
+  const fontes = tema.fontes.length ? `<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+${tema.fontes.map((u) => `<link rel="stylesheet" href="${escapeHtml(u)}">`).join('\n')}
+` : '';
+  return `<!doctype html>
 <html lang="${escapeHtml(lang)}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapeHtml(titulo)}</title>
 <meta name="description" content="${escapeHtml(descricao)}">
-${tema.fontes.length ? `<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-${tema.fontes.map((u) => `<link rel="stylesheet" href="${escapeHtml(u)}">`).join('\n')}
-` : ''}<link rel="stylesheet" href="style.css">
+${montarSeo(pagina)}${fontes}<link rel="stylesheet" href="style.css">
 </head>
-<body>
-${resultados.map((r) => r.html).join('\n')}
+`;
+}
+
+/**
+ * `extras.customCss`: sobrescritas do cliente, anexadas depois do CSS das seções.
+ * `extras.pastaCliente`: confere favicon/imagem social. `extras.perfilNicho`: perfil já carregado (testes).
+ */
+export function montarPagina(pagina, extras = {}) {
+  const erros = [];
+  for (const chave of Object.keys(pagina ?? {})) {
+    if (!CAMPOS_RAIZ.includes(chave)) erros.push(`${chave}: campo desconhecido na raiz do pagina.yaml (use ${CAMPOS_RAIZ.join(', ')})`);
+  }
+  erros.push(...validarPagina(pagina?.pagina, extras.pastaCliente));
+  if (!Array.isArray(pagina?.secoes) || pagina.secoes.length === 0) {
+    erros.push('secoes: lista obrigatória vazia');
+    return { erros };
+  }
+  erros.push(...validarNichoTipo(pagina, extras));
+
+  const resultados = pagina.secoes.map((item, i) => montarSecao(item, i));
+  const cabecalho = montarBloco(pagina.cabecalho, 'cabecalho');
+  const rodape = montarBloco(pagina.rodape, 'rodape');
+  const todos = [cabecalho, ...resultados, rodape].filter(Boolean);
+  for (const r of todos) erros.push(...r.erros);
+  const tema = carregarTema(pagina.tema);
+  erros.push(...tema.erros);
+  if (erros.length) return { erros };
+
+  const js = [...new Set(todos.map((r) => r.js).filter(Boolean))].join('\n');
+  const corpo = todos.map((r) => r.html).join('\n');
+  const html = `${montarHead(pagina.pagina, tema)}<body>
+${corpo}
 ${js ? '<script src="script.js" defer></script>\n' : ''}</body>
 </html>
 `;
   const baseCss = readFileSync(join(RAIZ, 'tokens', 'base.css'), 'utf8');
-  const css = [baseCss, tema.css, ...new Set(resultados.map((r) => r.css)), extras.customCss ?? ''].join('\n');
+  const css = [baseCss, tema.css, ...new Set(todos.map((r) => r.css)), extras.customCss ?? ''].join('\n');
   return { erros, html, css, js };
 }
 
@@ -276,7 +445,7 @@ function main() {
     console.error(`FALHOU: YAML inválido em ${arq}\n${e.message}`);
     process.exit(1);
   }
-  const { erros, html, css, js } = montarPagina(pagina, { customCss: lerOpcional(join(pastaCliente, 'custom.css')) });
+  const { erros, html, css, js } = montarPagina(pagina, { customCss: lerOpcional(join(pastaCliente, 'custom.css')), pastaCliente });
   if (erros.length) {
     console.error(`FALHOU (${cliente}): ${erros.length} erro(s)`);
     for (const e of erros) console.error(`  - ${e}`);

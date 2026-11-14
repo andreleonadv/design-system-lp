@@ -1,0 +1,10 @@
+<!-- cabecalho-a: barra simples com marca à esquerda, links e CTA à direita -->
+<header class="cabecalho-a" id="cabecalho">
+  <div class="container cabecalho-a__inner">
+    <p class="cabecalho-a__marca">{{#if logo}}<img class="cabecalho-a__logo" src="{{logo.src}}" alt="{{logo.alt}}">{{/if}}<span>{{marca}}</span></p>
+    {{#if links}}<nav class="cabecalho-a__nav" aria-label="Principal">
+      {{#each links}}<a class="cabecalho-a__link" href="{{url}}">{{texto}}</a>{{/each}}
+    </nav>{{/if}}
+    {{#if cta}}<a class="cabecalho-a__cta" href="{{cta.url}}">{{cta.texto}}</a>{{/if}}
+  </div>
+</header>

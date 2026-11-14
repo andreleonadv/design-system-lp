@@ -1,0 +1,18 @@
+<!-- rodape-a: rodapé em duas colunas (identificação e contatos) com avisos abaixo -->
+<footer class="rodape-a" id="rodape">
+  <div class="container rodape-a__inner">
+    <div class="rodape-a__id">
+      <p class="rodape-a__nome">{{nome}}</p>
+      {{#if texto}}<p class="rodape-a__texto">{{texto}}</p>{{/if}}
+      {{#if redes}}<ul class="rodape-a__lista">{{#each redes}}<li><a href="{{url}}">{{texto}}</a></li>{{/each}}</ul>{{/if}}
+    </div>
+    <div class="rodape-a__contato">
+      {{#if telefone}}<p>{{telefone}}</p>{{/if}}
+      {{#if email}}<p>{{email}}</p>{{/if}}
+      {{#if endereco}}<p>{{endereco}}</p>{{/if}}
+      {{#if links}}<ul class="rodape-a__lista">{{#each links}}<li><a href="{{url}}">{{texto}}</a></li>{{/each}}</ul>{{/if}}
+    </div>
+  </div>
+  {{#if aviso_legal}}<div class="container"><p class="rodape-a__aviso">{{aviso_legal}}</p></div>{{/if}}
+  {{#if copyright}}<div class="container"><p class="rodape-a__aviso">{{copyright}}</p></div>{{/if}}
+</footer>

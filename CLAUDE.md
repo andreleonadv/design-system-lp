@@ -36,8 +36,10 @@ opcionais para o que muda entre tipos de página ou nichos.
 - `nunca_inventar`, `proibido` e `termos_vetados` do nicho valem como regra de conteúdo.
 - Nicho novo: propor o perfil em texto (tipos de página, ordem, famílias reaproveitadas
 e novas, perguntas do briefing, regras) e esperar aprovação antes de criar arquivos.
-- `pagina.yaml` com `nicho` e `tipo` (e validação da ordem pelo build) é PLANEJADO,
-ainda não implementado.
+- `pagina.yaml` com `nicho` e `tipo` (juntos, opcionais): o build valida as seções pela `ordem` do
+`nicho.yaml` (só famílias do tipo, sem repetir, na ordem, nenhuma faltando). Pular seção só com
+decisão do usuário, registrada em `dispensar: [familia]` (nunca as `obrigatorias`). `cabecalho` e
+`rodape` são blocos próprios, fora dessa ordem. `termos_vetados` ainda NÃO é checado (Passo 7).
 
 ## Contrato técnico das variantes (build.mjs)
 

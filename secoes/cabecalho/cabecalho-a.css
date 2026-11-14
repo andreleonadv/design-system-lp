@@ -1,0 +1,34 @@
+/* cabecalho-a: barra simples */
+.cabecalho-a {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding-block: var(--space-4);
+}
+.cabecalho-a__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4) var(--space-5);
+}
+.cabecalho-a__marca {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-right: auto;
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  text-decoration: none;
+}
+.cabecalho-a__logo { height: 2.5rem; width: auto; }
+.cabecalho-a__nav { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); }
+.cabecalho-a__link { color: var(--muted); text-decoration: none; }
+.cabecalho-a__link:hover { color: var(--text); text-decoration: underline; }
+.cabecalho-a__cta {
+  background: var(--accent);
+  color: var(--on-accent);
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius);
+  font-weight: var(--weight-bold);
+  text-decoration: none;
+}

@@ -2,9 +2,25 @@ pagina:
   lang: pt-BR
   titulo: Cliente Teste
   descricao: Página de teste da fundação do design system.
+  url: "https://teste.exemplo.com.br"
+  nome_site: Cliente Teste
+  robots: noindex
+  negocio:
+    tipo: Organization
+    nome: Cliente Teste
 tema:
   tipografia: tipo-1
   paleta: paleta-1
+cabecalho:
+  id: cabecalho-a
+  dados:
+    marca: Cliente Teste
+    links:
+      - texto: Início
+        url: "#hero"
+    cta:
+      texto: Falar agora
+      url: "#contato"
 secoes:
   - id: hero-a
     dados:
@@ -13,3 +29,8 @@ secoes:
       cta:
         texto: Falar agora
         url: "#contato"
+rodape:
+  id: rodape-a
+  dados:
+    nome: Cliente Teste
+    texto: Rodapé de teste do design system.

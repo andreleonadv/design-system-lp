@@ -1,7 +1,7 @@
 # Perfil de nicho: advocacia
 # Fonte de verdade da estrutura das páginas deste nicho.
-# Status: documentado. A validação automática (ordem, obrigatórias, termos vetados)
-# ainda NÃO está implementada no build.mjs nem no qa.mjs.
+# Status: o build.mjs valida ordem e obrigatórias (pagina.yaml com nicho + tipo).
+# A checagem de termos vetados e nunca_inventar ainda NÃO está implementada (qa.mjs, Passo 7).
 nicho: advocacia
 descricao: "Escritórios e advogados: landing pages de serviços e site institucional."
 areas:

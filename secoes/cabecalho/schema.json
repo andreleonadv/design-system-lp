@@ -1,0 +1,37 @@
+{
+  "versao": 1,
+  "secao": "cabecalho",
+  "type": "object",
+  "required": ["marca"],
+  "properties": {
+    "marca": { "type": "string", "minLength": 1 },
+    "logo": {
+      "type": "object",
+      "required": ["src", "alt"],
+      "properties": {
+        "src": { "type": "string", "minLength": 1 },
+        "alt": { "type": "string", "minLength": 1 }
+      }
+    },
+    "links": {
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["texto", "url"],
+        "properties": {
+          "texto": { "type": "string", "minLength": 1 },
+          "url": { "type": "string", "minLength": 1, "format": "url" }
+        }
+      }
+    },
+    "cta": {
+      "type": "object",
+      "required": ["texto", "url"],
+      "properties": {
+        "texto": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "minLength": 1, "format": "url" }
+      }
+    }
+  }
+}

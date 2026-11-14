@@ -1,0 +1,39 @@
+{
+  "versao": 1,
+  "secao": "rodape",
+  "type": "object",
+  "required": ["nome"],
+  "properties": {
+    "nome": { "type": "string", "minLength": 1 },
+    "texto": { "type": "string", "minLength": 1 },
+    "telefone": { "type": "string", "minLength": 1 },
+    "email": { "type": "string", "minLength": 1 },
+    "endereco": { "type": "string", "minLength": 1 },
+    "links": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "required": ["texto", "url"],
+        "properties": {
+          "texto": { "type": "string", "minLength": 1 },
+          "url": { "type": "string", "minLength": 1, "format": "url" }
+        }
+      }
+    },
+    "redes": {
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["texto", "url"],
+        "properties": {
+          "texto": { "type": "string", "minLength": 1 },
+          "url": { "type": "string", "minLength": 1, "format": "url" }
+        }
+      }
+    },
+    "aviso_legal": { "type": "string", "minLength": 1 },
+    "copyright": { "type": "string", "minLength": 1 }
+  }
+}
