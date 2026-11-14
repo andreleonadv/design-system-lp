@@ -303,11 +303,27 @@ As 5 tipografias e 5 paletas finais ficam para o Passo 5, quando você já tiver
 
 Este é o **ciclo central**. Repita para cada seção, trocando `[SEÇÃO]`.
 
-**Ordem das seções:** cabeçalho, hero, como funciona, cards, prova social, FAQ, CTA final, rodapé.
+**O ciclo tem 4 comandos:**
+
+| Comando | O que faz | Quem decide |
+|---|---|---|
+| 1. Definir | Fixa o contrato (schema) e os eixos de variação, sem código | Você aprova |
+| 2. Criar a base | Gera a variante `-a` e valida no build e no QA | Você olha o screenshot |
+| 3. Refinar | Personaliza a base com referências, efeitos e microanimações | Você dirige |
+| 4. Derivar | Cria as demais variantes e fecha a seção | Você confere no catálogo |
+
+> Se você viu um roteiro de 3 comandos em outro lugar (por exemplo numa conversa anterior), a diferença é só esta: o refinamento com referências (Comando 3) foi acrescentado, e o antigo "Comando 3" virou o Comando 4.
+
+**Ordem das seções:** cabeçalho, hero, como funciona, cards, prova social, FAQ, CTA final, rodapé. Comece pelo **hero**, que já existe como base desde a Fase 0, e siga a lista. Faça **uma seção por sessão**, ou duas se forem simples (por exemplo rodapé e CTA final).
 
 **Pré-requisito:** Passos 1 a 3 concluídos.
 
 ### Comando 1 — Definir (nada de código ainda)
+
+**O que faz:** o modelo propõe os campos do schema, os eixos de variação e qual será a variante base, sem escrever nenhuma variante.
+**Quando usar:** sempre, no início de cada seção. É barato e **evita variantes parecidas entre si**.
+**O que esperar:** uma proposta curta em texto, que você aprova ou ajusta antes de qualquer código.
+
 
 ```text
 Leia o CLAUDE.md e o PROGRESSO.md. Vamos criar a seção [SEÇÃO]. Ainda NÃO escreva código de variante. Entregue só:
@@ -317,27 +333,39 @@ Leia o CLAUDE.md e o PROGRESSO.md. Vamos criar a seção [SEÇÃO]. Ainda NÃO e
 Espere minha aprovação.
 ```
 
-Você revisa e aprova ou ajusta. É a sua decisão mais barata e mais importante: depois dela o contrato está fixo.
+Você revisa e aprova ou ajusta. É a sua decisão mais barata e mais importante: **depois dela o contrato está fixo**, e mudá-lo mais tarde exige revisar todas as variantes.
 
 ### Comando 2 — Criar a base e validar
+
+**O que faz:** cria o `schema.json` e a variante `-a` (HTML e CSS), encaixa a seção na página de teste e roda build e QA.
+**Quando usar:** logo depois de aprovar o Comando 1.
+**O que esperar:** a seção aparecendo na página de teste, mais um relatório do que passou ou falhou no QA.
 
 ```text
 Aprovado. Crie o schema.json e a variante [seção]-a (html + css) seguindo o CLAUDE.md. Só tokens, sem hex. Adicione uma seção no clientes/teste/pagina.yaml usando [seção]-a, rode o build e o qa, e me diga o que passou ou falhou. Não crie as outras variantes ainda.
 ```
 
-**Pronto quando:** a página de teste builda com a seção e o QA passa em 375, 768 e 1280 px.
+**Pronto quando:** a página de teste builda com a seção e o QA passa em 375, 768 e 1280 px. **Olhe o screenshot uma vez**, antes de derivar as outras variantes: é mais barato corrigir a base agora do que corrigir todas depois.
 
 ### Comando 3 — Refinar com referências (você trabalha individualmente aqui)
 
-Use o modelo do [Passo 10](#10-como-personalizar-com-referências). Repita 2 a 3 rodadas, no máximo, até a base ficar do jeito que você quer.
+**O que faz:** você personaliza a variante do jeito que quer, trazendo referências de outras páginas para pegar efeitos e microanimações.
+**Quando usar:** com a base já validada (Comando 2) e, depois, em cada variante derivada, se quiser personalizá-la.
+**O que esperar:** de 2 a 3 rodadas de ajuste, no máximo, até a variante ficar como você quer.
+
+O prompt, as regras e as dicas de custo estão na [seção 10](#10-como-personalizar-com-referências). Em resumo: copie a técnica, nunca o conteúdo; a animação só enfeita; e dê feedback específico.
 
 ### Comando 4 — Derivar as outras variantes e fechar
+
+**O que faz:** cria as variantes `-b`, `-c` etc. com o mesmo schema, registra cada uma no `INDEX.md`, valida e faz o commit.
+**Quando usar:** só depois de a base estar aprovada e refinada.
+**O que esperar:** variantes novas na página de teste, `INDEX.md` e `PROGRESSO.md` atualizados e um commit da seção. Como o contrato já existe, esta etapa pode ser feita com um modelo mais barato.
 
 ```text
 A base [seção]-a está aprovada. Crie as variantes [seção]-b até [seção]-[última] conforme os eixos aprovados, usando [seção]-a como referência de estrutura e o MESMO schema.json. Para cada uma: adicione ao INDEX.md (1 linha: o que é, quando usar, limites), troque o ID no clientes/teste/pagina.yaml, rode build + qa. Ao terminar: atualize o PROGRESSO.md e faça um commit "feat: seção [SEÇÃO] (N variantes)".
 ```
 
-Cada variante derivada também pode passar pelo refinamento do Passo 10 (uma por sessão).
+Cada variante derivada também pode passar pelo refinamento da [seção 10](#10-como-personalizar-com-referências) (uma por sessão).
 
 ### Checklist de fechamento de cada seção
 
