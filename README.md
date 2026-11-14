@@ -146,8 +146,6 @@ O `nicho.yaml` é a **fonte de verdade** da estrutura de páginas do nicho. Ele 
 
 Ao montar uma página, o modelo lê **só o perfil do nicho do cliente**. Isso economiza tokens e impede que regras de um nicho contaminem outro. O `CLAUDE.md` fica genérico.
 
-**Planejado (ainda não implementado):** o `pagina.yaml` declarar `nicho` e `tipo`, e o build ler o `nicho.yaml` para validar a ordem e as seções obrigatórias, e o QA verificar os termos vetados.
-
 #### Famílias de seção: uma biblioteca para todos os nichos
 
 Cada seção é uma **família** (uma pasta em `secoes/`) com suas variantes (`hero-a`, `atuacao-b`…). Todas as famílias ficam na mesma pasta e **são compartilhadas entre nichos**; cada perfil escolhe quais usa.
@@ -227,7 +225,7 @@ Depois, crie só as famílias que faltarem, pelo roteiro de 4 comandos do Passo 
 1. Os **nomes das famílias** (`atuacao`, `autoridade`, `requisitos`…) são propostas derivadas da estrutura da advocacia. Confirme antes de criar as seções.
 2. **Cabeçalho e rodapé** não constam na estrutura informada. Se forem necessários (menu, links legais, aviso da OAB), serão elementos fixos de apoio; decida se entram.
 3. Se `hero`, `atuacao`, `autoridade`, `faq` e `contato` ficam **compartilhadas** ou se alguma deve ser dividida.
-4. O formato do perfil de nicho ainda não foi testado com um segundo nicho.
+4. Validar o formato do perfil de nicho com um segundo nicho antes de considerá-lo estável.
 
 **Resumo:** cada nicho tem um perfil em `nichos/<nicho>/` com tipos de página, ordem das seções, regras de conteúdo e briefing. As famílias de seção são uma biblioteca única, compartilhada, e só cresce quando um nicho precisa. O modelo lê apenas o perfil do nicho em uso. A advocacia é o nicho piloto, e o formato deve ser validado com um segundo nicho.
 
@@ -269,7 +267,7 @@ design-system-lp/
     <nome>/
       briefing.md        # material do cliente
       pagina.yaml        # a planta da página
-      custom.css         # (opcional, planejado) pequenas sobrescritas
+      custom.css         # (opcional) pequenas sobrescritas
       assets/            # logo, fotos
       dist/              # GERADO: a página pronta
 ```
@@ -412,7 +410,7 @@ Leia o CLAUDE.md e o PROGRESSO.md. Rode npm install e npm test. Crie qa.mjs que,
 
 **Objetivo:** criar o registro que o modelo lê para escolher variantes (`INDEX.md`) e um verificador que barra variantes fora do padrão antes de elas se espalharem.
 
-**Por que agora:** o `CLAUDE.md` exige uma linha no `INDEX.md` para toda variante nova, e o `hero-a` ainda não está lá. O lint evita os erros que o build não pega sozinho.
+**Por que agora:** o `CLAUDE.md` exige uma linha no `INDEX.md` para toda variante nova. O lint evita os erros que o build não pega sozinho.
 
 Sessão nova:
 
@@ -428,7 +426,7 @@ Leia o CLAUDE.md e o PROGRESSO.md. Rode npm install e npm test. Crie INDEX.md co
 
 ## 9. Passo 4 — Tokens provisórios e tema
 
-**Objetivo:** ter pelo menos uma tipografia e uma paleta reais **e** um jeito de o `pagina.yaml` escolhê-las. Hoje o build só carrega `tokens/base.css`: arquivos `tipo-1.css` e `paleta-1.css` criados sem esta etapa **nunca entrariam na página**.
+**Objetivo:** ter pelo menos uma tipografia e uma paleta reais **e** um jeito de o `pagina.yaml` escolhê-las. Sem esta etapa o build só carrega `tokens/base.css`: arquivos `tipo-1.css` e `paleta-1.css` criados sem esta etapa **nunca entrariam na página**.
 
 Sessão nova:
 
@@ -453,7 +451,7 @@ Estas decisões são suas. O modelo propõe em texto, você aprova, e só então
 | Decisão | Opções | Efeito se mudar depois |
 |---|---|---|
 | **Cabeçalho e rodapé** | Entram como seções fixas de apoio (menu, links legais, aviso da OAB) ou ficam de fora | Nova família, novo schema e revisão de todas as páginas |
-| **SEO básico** | Hoje só `title` e `description`. Incluir Open Graph, favicon e dados estruturados? | Mudança no build e no bloco `pagina` do schema da página |
+| **SEO básico** | O build gera só `title` e `description`. Incluir Open Graph, favicon e dados estruturados? | Mudança no build e no bloco `pagina` do schema da página |
 | **`nicho` e `tipo` no `pagina.yaml`** | O build lê `nichos/<nicho>/nicho.yaml` e valida ordem e seções obrigatórias | Páginas já criadas precisam ganhar os campos |
 | **Famílias compartilhadas** | `hero`, `atuacao`, `autoridade`, `faq` e `contato` ficam únicas ou alguma se divide | Reescrita de schema e variantes |
 | **CTA padrão e referências visuais** | Definir (hoje "a definir") | Retrabalho de copy e de refinamento |
