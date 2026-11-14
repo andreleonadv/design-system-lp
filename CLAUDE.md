@@ -25,6 +25,19 @@ Nunca preencher dado do cliente com valor inventado.
 
 
 
+## Referências, efeitos e animações
+
+- Referência (link ou print) é fonte de TÉCNICA, nunca de conteúdo: não copiar
+textos, imagens, logos nem código proprietário de terceiros.
+- Animação só enfeita: o conteúdo deve ficar visível e legível sem ela
+(QA e screenshots dependem disso).
+- Animar só `transform` e `opacity`, 150-400 ms, com `--dur` e `--ease`.
+Respeitar `prefers-reduced-motion`.
+- JS só se necessário, em arquivo opcional da variante (`<id>.js`). Sem bibliotecas pesadas.
+- Campo novo exigido por um efeito deve ser OPCIONAL; mudar o `schema.json`
+exige revisar todas as variantes da seção e incrementar `versao`.
+- Refinar uma variante por sessão, no máximo 2-3 rodadas.
+
 ## Como trabalhar (economia de tokens)
 
 - Para montar uma página: ler só `INDEX.md` e os `schema.json` dos IDs escolhidos.
