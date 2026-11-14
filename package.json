@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
-    "test": "node --test"
+    "test": "node --test",
+    "lint": "node lint.mjs"
   },
   "dependencies": {
     "js-yaml": "4.1.0"

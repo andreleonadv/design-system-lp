@@ -51,7 +51,7 @@ SEMPRE com `each`; nunca `{{lista.0.x}}`.
 (bloqueia `javascript:`). Campos de imagem: objeto `{src, alt}` com `alt` obrigatório.
 - Arquivos opcionais: `<id>.js` vira `dist/script.js` (`defer`); `clientes/<nome>/custom.css` é
 anexado por último ao `style.css`; `clientes/<nome>/assets/` é copiado para `dist/assets/`.
-- `lint.mjs` (Passo 3 do README) ainda não existe. A raiz de cada variante leva `id="<familia>"` (ex.: `id="contato"`) para os links `#contato` do CTA.
+- `lint.mjs` existe (Passo 3): `node lint.mjs`. A raiz de cada variante leva `id="<familia>"` (ex.: `id="contato"`) para os links `#contato` do CTA.
 - No `pagina.yaml`, SEMPRE entre aspas: textos com `:` ou `#`, telefones, números e yes/no
 (senão o YAML os converte e o build acusa "esperado texto").
 - Todo `<id>.html` começa com comentário de 1 linha (ID e descrição). Não escrever `{{` em comentários.

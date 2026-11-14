@@ -12,7 +12,7 @@ Este documento é um **tutorial passo a passo**. Quem ler do início ao fim sabe
 >
 > **Estado atual do código** (a fonte de verdade é o `PROGRESSO.md`):
 > - **Implementado (Fase 0 + auditoria):** `node build.mjs <cliente>`; `pagina.yaml` com o bloco `pagina` (lang, titulo, descricao) e `secoes: [{id, dados}]`; um `schema.json` por seção, com validação (obrigatórios, opcionais, `minLength`, `maxLength`, `enum`, `format: url`); templates com `{{campo}}`, `{{#if}}` e `{{#each}}`; falha em campo obrigatório vazio e em `{{placeholder}}` sobrando; `<id>.js` opcional, `custom.css` e `assets/` do cliente; `tokens/base.css`; a seção `hero-a` (schema v2); testes do build (`npm test`).
-> - **Ainda não implementado** (descrito neste tutorial como alvo): `INDEX.md` e lint de variantes, tema no `pagina.yaml` (cores, tipografia, estilo, paleta), `nicho`/`tipo` com validação da ordem, SEO além de `title`/`description`, otimização de imagens, catálogo e as automações do Passo 9 (`novo-cliente.mjs` etc.).
+> - **Ainda não implementado** (descrito neste tutorial como alvo): tema no `pagina.yaml` (cores, tipografia, estilo, paleta), `nicho`/`tipo` com validação da ordem, SEO além de `title`/`description`, otimização de imagens, catálogo e as automações do Passo 9 (`novo-cliente.mjs` etc.).
 >
 > **Sequência certa (não pule):** Passo 0 ambiente → **1 Fase 0 (já feito)** → 2 QA → 3 `INDEX.md` e lint → 4 tokens provisórios e `tema` → 5 decisões estruturais → **só então** 6 criar seções. Sem os Passos 2 a 5, cada seção seria criada sem o juiz (QA), sem tema e sem registro, e teria de ser refeita depois.
 >
@@ -55,7 +55,7 @@ Siga **de cima para baixo**. Cada item é explicado no passo de mesmo número. E
 - [x] Passo 0: ambiente pronto (Node, git, pasta, `CLAUDE.md`, `PROGRESSO.md`, commit inicial)
 - [x] Passo 1: Fase 0 (build, tokens base, `hero-a`, página de teste) e auditoria do build (`npm test` passa)
 - [x] Passo 2: `qa.mjs` funcionando
-- [ ] Passo 3: `INDEX.md` (com `hero-a`) e lint das variantes
+- [x] Passo 3: `INDEX.md` (com `hero-a`) e lint das variantes
 - [ ] Passo 4: 1 tipografia, 1 paleta provisórias e bloco `tema` no build
 - [ ] Passo 5: decisões estruturais (cabeçalho/rodapé, SEO, `nicho`/`tipo` no `pagina.yaml`)
 - [ ] Passo 6: seções criadas (marque cada uma)

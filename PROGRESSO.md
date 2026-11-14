@@ -25,7 +25,8 @@
 - Documentação com estrutura de site (8) e landing (9) da advocacia.
 - Perfis de nicho: `nichos/_modelo/` e `nichos/advocacia/` (nicho.yaml, briefing.md, conteudo.md); `CLAUDE.md` tornado genérico.
 - Auditoria pré-seções (2026-11-14): `build.mjs` reescrito para suportar o que as seções exigem (ver "Erros encontrados"); `test/build.test.mjs` (16 testes, `npm test`); `.gitattributes` (LF); `package.json` com scripts `build`/`test`; schema do `hero` v2 (`imagem` opcional com `alt` obrigatório, `cta.url` com `format: url`).
-- Passo 2 (2026-11-14): `qa.mjs` + `test/qa.test.mjs` (25 testes no total). Uso: `node qa.mjs <cliente> [--sem-browser]`; roda o build e checa placeholders, alt, links vazios/"#", h1 único e sem salto de nível, peso (html+css+js ≤ 150 KB, dist ≤ 1,5 MB), overflow e contraste AA em 375/768/1280, prints em `clientes/<nome>/qa/<largura>.png` (no `.gitignore`). Achou Chrome/Edge sozinho (ou `CHROME_PATH`). Verificado: `teste` passa; CSS com texto quase invisível e `nowrap` faz o QA falhar (exit 1). Âncora sem alvo (ex.: `#contato`) é só aviso. Contraste ignora texto sobre imagem/gradiente (avisa). `lint.mjs`/`INDEX.md` seguem pendentes.
+- Passo 2 (2026-11-14): `qa.mjs` + `test/qa.test.mjs` (25 testes no total). Uso: `node qa.mjs <cliente> [--sem-browser]`; roda o build e checa placeholders, alt, links vazios/"#", h1 único e sem salto de nível, peso (html+css+js ≤ 150 KB, dist ≤ 1,5 MB), overflow e contraste AA em 375/768/1280, prints em `clientes/<nome>/qa/<largura>.png` (no `.gitignore`). Achou Chrome/Edge sozinho (ou `CHROME_PATH`). Verificado: `teste` passa; CSS com texto quase invisível e `nowrap` faz o QA falhar (exit 1). Âncora sem alvo (ex.: `#contato`) é só aviso. Contraste ignora texto sobre imagem/gradiente (avisa). 
+- Passo 3 (2026-11-14): `INDEX.md` (hero-a) + `lint.mjs` + `test/lint.test.mjs` (35 testes no total). Uso: `node lint.mjs` (ou `npm run lint`). Checa: campos `{{}}` do .html existem no schema (inclui `a.b`, `each`, `this`); .css sem hex/rgb()/hsl(); .html começa com `<!-- id: descrição -->` (ID igual ao nome do arquivo); variante listada no INDEX.md (e INDEX sem órfãos); um só `schema.json` por família, com `secao` = nome da pasta; .css presente. Reprovou e foi corrigido: `hero-a.html` sem comentário de ID. Formato do INDEX: ``- `<id>` — descrição``.
 ## Erros encontrados na auditoria (corrigidos)
 - Build não repetia listas (faq, passos, áreas) nem aceitava campo opcional → `{{#each}}`, `{{#if}}` e validação de opcionais.
 - Schema ignorava `minLength`/`enum`; campo opcional preenchido nunca era validado; URL `javascript:` passava → validação completa e `format: url`.
@@ -33,9 +34,8 @@
 - Número no YAML (telefone) dava erro sem dica → mensagem orienta a pôr aspas.
 - Docs afirmavam `qa.mjs`/`INDEX.md` como verificação, mas não existem → marcados como pendentes.
 ## Ainda NÃO existe (pendente, nesta ordem, ANTES de criar seções)
-1. `INDEX.md` (incluir `hero-a`) e lint de variantes (placeholders do HTML ⊆ schema; sem hex no CSS; mesmo `schema.json` por família).
-2. Tokens provisórios (Passo 3): o build só carrega `tokens/base.css`; falta decidir como o `pagina.yaml` escolhe `tipo-N`/`paleta`/`estilo` (bloco `tema`) e implementar no build.
-3. Decidir cabeçalho/rodapé, SEO básico (Open Graph, favicon, dados estruturados — hoje só `title` e `description`) e `nicho`/`tipo` no `pagina.yaml` com validação da ordem.
+1. Tokens provisórios (Passo 4): o build só carrega `tokens/base.css`; falta decidir como o `pagina.yaml` escolhe `tipo-N`/`paleta`/`estilo` (bloco `tema`) e implementar no build.
+2. Decidir cabeçalho/rodapé, SEO básico (Open Graph, favicon, dados estruturados — hoje só `title` e `description`) e `nicho`/`tipo` no `pagina.yaml` com validação da ordem.
 ## Próximo (sequência do README, uma etapa por sessão)
-- Passo 3: `INDEX.md` + `lint.mjs`. Passo 4: tokens provisórios + `tema` no build. Passo 5: decisões estruturais. Só então o Passo 6: seção `problema` (o `hero-a` já existe; refinar com o Comando 3).
+- Passo 4: tokens provisórios + `tema` no build. Passo 5: decisões estruturais. Só então o Passo 6: seção `problema` (o `hero-a` já existe; refinar com o Comando 3).
 - Depois: Passo 7+: build lendo `nicho.yaml` (ordem, obrigatórias), QA com termos vetados, `gerar-paleta.mjs`, tipografia/estilos.
