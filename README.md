@@ -8,7 +8,13 @@ Este documento é um **tutorial passo a passo**. Quem ler do início ao fim sabe
 
 > **Para o modelo (Claude):** não leia este arquivo por padrão. Ele é longo e serve ao humano. As regras de trabalho estão no `CLAUDE.md`; o estado está no `PROGRESSO.md`.
 >
-> Os números de economia de tokens citados aqui são **estimativas**, não medições. Nomes de scripts e a forma exata de chamá-los (por exemplo `node build.mjs clientes/teste`) são **sugestões**: confirme na Fase 0 o que o `build.mjs` realmente aceita e ajuste este tutorial.
+> Os números de economia de tokens citados aqui são **estimativas**, não medições.
+>
+> **Estado atual do código** (a fonte de verdade é o `PROGRESSO.md`):
+> - **Implementado (Fase 0):** `node build.mjs <cliente>`; `pagina.yaml` com o bloco `pagina` (lang, titulo, descricao) e `secoes: [{id, dados}]`; um `schema.json` por seção, com validação; falha em campo obrigatório vazio e em `{{placeholder}}` sobrando; `tokens/base.css`; a seção `hero-a`.
+> - **Ainda não implementado** (descrito neste tutorial como alvo): `qa.mjs`, `INDEX.md`, tema no `pagina.yaml` (cores, tipografia, estilo, paleta), `custom.css` por cliente, campos opcionais que somem, cópia e otimização de imagens, catálogo e as automações do Passo 9 (`novo-cliente.mjs` etc.).
+>
+> Quando uma parte for implementada, atualize esta lista.
 
 ---
 
@@ -504,28 +510,36 @@ Regras: leia só INDEX.md e os schema.json dos IDs escolhidos; não abra os arqu
 
 ### 13.4 O que o `pagina.yaml` contém
 
+Formato **atual**, o que o `build.mjs` lê hoje (exemplo real de `clientes/teste/pagina.yaml`):
+
 ```yaml
-cliente: exemplo-advocacia
-nicho: advocacia
-versao: 1
+pagina:
+  lang: pt-BR
+  titulo: Cliente Exemplo
+  descricao: Descrição curta para SEO.
+secoes:
+  - id: hero-a
+    dados:
+      titulo: "..."
+      subtitulo: "..."
+      cta:
+        texto: "Falar no WhatsApp"
+        url: "https://wa.me/..."
+  - id: como-funciona-c      # exemplo: esta variante ainda não existe
+    dados:
+      passos:
+        - { titulo: "...", texto: "..." }
+```
+
+Cada item de `secoes` tem um `id` (o ID da variante, por exemplo `hero-a`) e os `dados` da seção, que devem seguir o `schema.json` dela. O que o schema não declara é rejeitado pelo build.
+
+**Planejado (ainda não implementado):** um bloco `tema` para escolher cores, tipografia e estilo por cliente. Hoje o build só carrega `tokens/base.css`.
+
+```yaml
 tema:
   cores: ["#1f3a5f", "#b08d57"]
   tipografia: tipo-3
   estilo: sobrio
-secoes:
-  - cabecalho: cabecalho-a
-    logo: assets/logo.svg
-  - hero: hero-b
-    titulo: "..."
-    subtitulo: "..."
-    cta: { texto: "Falar no WhatsApp", link: "https://wa.me/..." }
-  - como-funciona: cf-c
-    passos:
-      - { titulo: "...", texto: "..." }
-  - cards: cards-a
-    itens: [ ... ]
-  - faq: faq-a
-  - rodape: rodape-a
 ```
 
 **Regra de segurança:** campo obrigatório vazio ou `{{placeholder}}` sobrando **faz o build falhar**. O sistema nunca preenche dado do cliente com valor inventado.
@@ -556,7 +570,7 @@ git commit -m "feat: landing <nome>"
 **Todas as seções precisam estar preenchidas?** Não. A página tem só as seções listadas no `pagina.yaml`.
 
 - **Nível da página:** recomenda-se um mínimo fixo de **hero, CTA e rodapé**. O resto é opcional (sem depoimentos, não coloque `prova-social`).
-- **Nível do campo:** numa seção escolhida, os campos **obrigatórios** do schema precisam estar preenchidos, senão o build falha. Os **opcionais** podem ficar vazios, e nesse caso o elemento correspondente some em vez de aparecer com texto de exemplo.
+- **Nível do campo:** numa seção escolhida, os campos **obrigatórios** do schema precisam estar preenchidos, senão o build falha. Os **opcionais** podem ficar vazios, e nesse caso o elemento correspondente some em vez de aparecer com texto de exemplo (**planejado:** o build atual ainda não suporta isso; hoje todo `{{campo}}` do HTML precisa ter valor).
 - **A variante depende do material.** Sem foto boa, escolha uma variante que não exija imagem (o `INDEX.md` informa se cada variante exige).
 
 **Como alimentar a copy:**
@@ -703,14 +717,18 @@ git log --oneline
 git tag v1
 ```
 
-**Sistema** (nomes e argumentos exatos dependem do `build.mjs` criado na Fase 0; confirme lá):
+**Sistema:**
 
 ```bash
-node build.mjs clientes/<nome>
+node build.mjs <cliente>
 ```
 
+Sem argumento, o build usa o cliente `teste`. Ele lê `clientes/<cliente>/pagina.yaml` e gera `clientes/<cliente>/dist/index.html` e `style.css`. Antes do primeiro uso, rode `npm install` (a única dependência é o `js-yaml`).
+
+O QA ainda **não existe**. Depois do Passo 2, o comando será algo como (confirme o nome real quando for criado):
+
 ```bash
-node qa.mjs clientes/<nome>
+node qa.mjs <cliente>
 ```
 
 **Ferramentas:**
