@@ -66,7 +66,7 @@ Marque conforme avançar. Cada item é explicado nos passos abaixo.
   - [ ] servicos (site)
   - [ ] conteudos (site)
 
-  A ordem acima é a de **criação**: as 9 primeiras completam a landing; as 3 últimas completam o site. Ver [seção 2.1](#21-os-dois-tipos-de-página-e-a-regra-de-congruência).
+  A ordem acima é a de **criação** para o nicho piloto (advocacia): as 9 primeiras completam a landing; as 3 últimas completam o site. Ver [seção 2.1](#21-nichos-tipos-de-página-e-regra-de-congruência).
 - [ ] Passo 5: 5 tipografias e 5 paletas finais
 - [ ] Passo 6: catálogo gerado
 - [ ] Passo 7: piloto com cliente real
@@ -106,7 +106,8 @@ Marque conforme avançar. Cada item é explicado nos passos abaixo.
 | **Token semântico** | Nomeado pela função, não pela aparência | `--accent`, não `--azul` |
 | **Seção** | Um bloco da página | hero, atuação, autoridade |
 | **Família de seção** | A pasta de uma seção em `secoes/`, com todas as suas variantes | `atuacao/` (`atuacao-a`, `atuacao-b`…) |
-| **Tipo de página** | Estrutura fixa de seções: `site` (8) ou `landing` (9) | ver seção 2.1 |
+| **Tipo de página** | Estrutura de seções de um nicho (na advocacia: `site` com 8 e `landing` com 9) | ver seção 2.1 |
+| **Perfil de nicho** | Pasta `nichos/<nicho>/` com os tipos de página, a ordem das seções, as regras de conteúdo e o briefing do nicho | `nichos/advocacia/nicho.yaml` |
 | **Variante** | Uma versão estrutural de uma seção | `hero-a`, `hero-b`, `hero-c` |
 | **ID** | Nome único de uma variante, também usado como nome de arquivo | `hero-b` |
 | **Schema** (contrato) | Lista dos campos que uma seção aceita; igual para todas as variantes | `titulo`, `subtitulo`, `cta` |
@@ -134,9 +135,50 @@ Cada variante tem seus próprios arquivos (`hero-a.html`, `hero-a.css`). Motivos
 
 **Resumo:** tokens (aparência), seções (estrutura), `pagina.yaml` (composição). Mesmo schema em todas as variantes. Um arquivo por variante.
 
-### 2.1 Os dois tipos de página e a regra de congruência
+### 2.1 Nichos, tipos de página e regra de congruência
 
-O nicho inicial é **advocacia**, com as áreas **Direito Bancário, Imobiliário e do Consumidor**. O sistema monta dois tipos de página, cada um com estrutura e ordem fixas.
+O sistema serve a **vários nichos** (advocacia, barbearia, clínica…). Para não engessar, o que depende do nicho fica **separado** dos componentes.
+
+| Camada | Muda por nicho? | Exemplo |
+|---|---|---|
+| Componentes (variantes `hero-a`, `faq-b`) | Quase nunca | Um FAQ é um FAQ em qualquer nicho |
+| Tokens (cores, tipografia, estilo) | Por cliente, não por nicho | |
+| **Quais seções, em que ordem** | **Sim** | Advocacia tem `fundamentacao`; barbearia teria `galeria` e `localizacao` |
+| **Regras de conteúdo** | **Sim** | Advocacia segue a OAB; barbearia quase não tem restrição |
+| **Perguntas do briefing** | **Sim** | Barbearia: preços, horários, endereço |
+| Tom, CTA e tipo de imagem | **Sim** | |
+
+#### Perfil de nicho
+
+Cada nicho tem uma pasta própria, chamada **perfil**:
+
+```
+nichos/
+  _modelo/nicho.yaml     # ponto de partida para um nicho novo
+  advocacia/
+    nicho.yaml           # tipos de página, ordem das seções, regras, tom, CTA
+    briefing.md          # perguntas do briefing deste nicho
+    conteudo.md          # o que pode e o que não pode dizer
+  barbearia/ ...         # exemplo: criado quando houver o primeiro cliente
+```
+
+O `nicho.yaml` é a **fonte de verdade** da estrutura de páginas do nicho. Ele define, para cada tipo de página (por exemplo `site` e `landing`): a lista de seções **na ordem**, as seções obrigatórias e a regra de congruência (a lógica que liga uma seção à seguinte). Também guarda as regras de conteúdo (`nunca_inventar`, `proibido`, `termos_vetados`), o tom, o CTA padrão e o tipo de imagem.
+
+Ao montar uma página, o modelo lê **só o perfil do nicho do cliente**. Isso economiza tokens e impede que regras de um nicho contaminem outro. O `CLAUDE.md` fica genérico.
+
+**Planejado (ainda não implementado):** o `pagina.yaml` declarar `nicho` e `tipo`, e o build ler o `nicho.yaml` para validar a ordem e as seções obrigatórias, e o QA verificar os termos vetados.
+
+#### Famílias de seção: uma biblioteca para todos os nichos
+
+Cada seção é uma **família** (uma pasta em `secoes/`) com suas variantes (`hero-a`, `atuacao-b`…). Todas as famílias ficam na mesma pasta e **são compartilhadas entre nichos**; cada perfil escolhe quais usa.
+
+- **Regra:** crie uma família nova **só quando um nicho precisar dela**.
+- **Famílias compartilhadas** entre tipos de página ou nichos usam **campos opcionais** no schema para o que muda. Se os usos divergirem demais, divida a família em duas.
+- As 12 famílias atuais nasceram da advocacia. Algumas são gerais (`hero`, `faq`, `contato`, `atuacao`, `autoridade`, `problema`, `solucoes`), outras são típicas do nicho (`fundamentacao`, `requisitos`, `areas`, `conteudos`). A barbearia, por exemplo, pediria `galeria`, `servicos` com preços e `localizacao`. Não renomeie as famílias antes de o segundo nicho mostrar o que é realmente comum.
+
+#### Exemplo: o nicho advocacia
+
+Áreas: Direito Bancário, Imobiliário e do Consumidor. O perfil completo está em `nichos/advocacia/nicho.yaml`. Resumo:
 
 **Tipo `site` (institucional): 8 seções**
 
@@ -166,9 +208,7 @@ O nicho inicial é **advocacia**, com as áreas **Direito Bancário, Imobiliári
 - **Site:** Apresentação → Áreas → Serviços → Atuação → Autoridade → Conteúdo → Dúvidas → Contato.
 - **Landing:** Reconhecimento → Problema → Solução → Requisitos → Processo → Autoridade → Fundamentação → Dúvidas → Conversão.
 
-Não reordene nem pule seção sem decidir isso conscientemente. **Planejado (ainda não implementado):** um campo `tipo: site | landing` no bloco `pagina` do `pagina.yaml`, para o build e o QA validarem a ordem e as seções obrigatórias de cada tipo.
-
-**Famílias de seção.** Cada seção da estrutura vira uma **família** (a pasta em `secoes/`), com seus IDs de variante (`hero-a`, `atuacao-b`…). Cinco famílias servem aos dois tipos de página, o que reduz o trabalho de criação:
+Não reordene nem pule seção sem decidir isso conscientemente.
 
 | Família (pasta) | Site institucional | Landing page |
 |---|---|---|
@@ -185,17 +225,31 @@ Não reordene nem pule seção sem decidir isso conscientemente. **Planejado (ai
 | `faq` | 7. FAQ | 8. FAQ |
 | `contato` | 8. Contato e CTA final | 9. Encerramento e CTA final |
 
-Total: **12 famílias**. **Compartilhadas:** `hero`, `atuacao`, `autoridade`, `faq`, `contato`. **Só landing:** `problema`, `solucoes`, `requisitos`, `fundamentacao`. **Só site:** `areas`, `servicos`, `conteudos`.
+Total: **12 famílias**. **Compartilhadas entre site e landing:** `hero`, `atuacao`, `autoridade`, `faq`, `contato`. **Só landing:** `problema`, `solucoes`, `requisitos`, `fundamentacao`. **Só site:** `areas`, `servicos`, `conteudos`.
 
-**Famílias compartilhadas:** o schema deve atender os dois tipos, usando campos **opcionais** para o que muda (imagem no `hero`, CTA intermediário em `atuacao`, vários profissionais em `autoridade`, canais de atendimento em `contato`). Se os dois usos divergirem demais, divida a família em duas no Comando 1 da seção.
+#### Como adicionar um nicho novo (por exemplo, barbearia)
 
-**Decisões em aberto** (confirme antes de criar as seções):
+Faça isto **depois** de ter o primeiro cliente do nicho, ou ao planejar o nicho. É só texto e configuração, e custa pouco. Sessão nova:
 
-1. Os **nomes das famílias** acima são propostas minhas, derivadas da sua estrutura.
-2. **Cabeçalho e rodapé** não constam na sua estrutura. Se forem necessários (menu, links legais, aviso da OAB), serão elementos fixos de apoio; decida se entram.
-3. Se `hero`, `atuacao`, `autoridade`, `faq` e `contato` realmente ficam compartilhadas ou se alguma deve ser dividida.
+```text
+Leia o CLAUDE.md e o PROGRESSO.md. Vamos criar o perfil do nicho [NICHO]. Ainda NÃO crie componentes. Proponha, em texto, e espere minha aprovação:
+1) Os tipos de página (site, landing...) e a ordem das seções de cada um, seguindo uma regra de congruência.
+2) Quais famílias já existentes em secoes/ serão reaproveitadas e quais famílias novas serão necessárias.
+3) As perguntas do briefing deste nicho.
+4) As regras de conteúdo: o que nunca inventar, termos vetados, avisos obrigatórios (conselho profissional, se houver), tom e CTA padrão.
+Depois de aprovado, crie nichos/[nicho]/nicho.yaml, briefing.md e conteudo.md, usando nichos/_modelo/ como base.
+```
 
-**Resumo:** há dois tipos de página (site com 8 seções e landing com 9), com ordem fixa pela regra de congruência. As seções viram 12 famílias, 5 delas compartilhadas. Os nomes das famílias e a presença de cabeçalho e rodapé ainda precisam da sua confirmação.
+Depois, crie só as famílias que faltarem, pelo roteiro de 4 comandos do Passo 4. **Valide o formato do perfil com o segundo nicho antes de considerá-lo estável.**
+
+#### Decisões em aberto
+
+1. Os **nomes das famílias** (`atuacao`, `autoridade`, `requisitos`…) são propostas derivadas da estrutura da advocacia. Confirme antes de criar as seções.
+2. **Cabeçalho e rodapé** não constam na estrutura informada. Se forem necessários (menu, links legais, aviso da OAB), serão elementos fixos de apoio; decida se entram.
+3. Se `hero`, `atuacao`, `autoridade`, `faq` e `contato` ficam **compartilhadas** ou se alguma deve ser dividida.
+4. O formato do perfil de nicho ainda não foi testado com um segundo nicho.
+
+**Resumo:** cada nicho tem um perfil em `nichos/<nicho>/` com tipos de página, ordem das seções, regras de conteúdo e briefing. As famílias de seção são uma biblioteca única, compartilhada, e só cresce quando um nicho precisa. O modelo lê apenas o perfil do nicho em uso. A advocacia é o nicho piloto, e o formato deve ser validado com um segundo nicho.
 
 ---
 
@@ -214,6 +268,9 @@ design-system-lp/
     paleta/paleta-1.css ... paleta-5.css   # presets (clientes sem marca)
     estilo/sobrio.css, suave.css, ...      # raio, sombra, densidade
     gerar-paleta.mjs     # 1-2 cores da marca -> tokens completos, com checagem de contraste
+  nichos/                # perfil de cada nicho (estrutura, regras, briefing)
+    _modelo/nicho.yaml   # ponto de partida para um nicho novo
+    advocacia/           # nicho.yaml, briefing.md, conteudo.md
   secoes/
     hero/
       schema.json        # contrato da seção (1 por seção)
@@ -393,9 +450,9 @@ Este é o **ciclo central**. Repita para cada seção, trocando `[SEÇÃO]`.
 
 > Se você viu um roteiro de 3 comandos em outro lugar (por exemplo numa conversa anterior), a diferença é só esta: o refinamento com referências (Comando 3) foi acrescentado, e o antigo "Comando 3" virou o Comando 4.
 
-**Ordem de criação das seções** (completa a landing primeiro, depois as exclusivas do site): `hero`, `problema`, `solucoes`, `requisitos`, `atuacao`, `autoridade`, `fundamentacao`, `faq`, `contato`; depois `areas`, `servicos`, `conteudos`. Comece pelo **hero**, que já existe como base desde a Fase 0, e siga a lista. Faça **uma seção por sessão**, ou duas se forem simples (por exemplo `faq` e `contato`).
+**Ordem de criação das seções (nicho piloto: advocacia)** (completa a landing primeiro, depois as exclusivas do site): `hero`, `problema`, `solucoes`, `requisitos`, `atuacao`, `autoridade`, `fundamentacao`, `faq`, `contato`; depois `areas`, `servicos`, `conteudos`. Comece pelo **hero**, que já existe como base desde a Fase 0, e siga a lista. Faça **uma seção por sessão**, ou duas se forem simples (por exemplo `faq` e `contato`).
 
-Atenção: esta é a ordem de **criação**. A ordem **na página** segue a regra de congruência da [seção 2.1](#21-os-dois-tipos-de-página-e-a-regra-de-congruência). Nas famílias compartilhadas (`hero`, `atuacao`, `autoridade`, `faq`, `contato`), o schema deve atender site e landing, com campos opcionais para o que muda.
+Atenção: esta é a ordem de **criação**. A ordem **na página** segue a regra de congruência da [seção 2.1](#21-nichos-tipos-de-página-e-regra-de-congruência). Nas famílias compartilhadas (`hero`, `atuacao`, `autoridade`, `faq`, `contato`), o schema deve atender site e landing, com campos opcionais para o que muda.
 
 **Pré-requisito:** Passos 1 a 3 concluídos.
 
@@ -560,7 +617,7 @@ Crie `clientes/<nome>/briefing.md` e a pasta `assets/` com:
 - contatos e CTA;
 - logo, fotos e cores da marca (se houver);
 - textos já aprovados;
-- regras do nicho. Na advocacia, a publicidade segue as normas da OAB (por exemplo o Código de Ética e Disciplina e o Provimento 205/2021 do CFOAB; confirme a versão vigente com o advogado responsável): sem promessa de resultado e sem captação indevida de clientela. **Legislação, jurisprudência, número de OAB, credenciais e depoimentos vêm do briefing e são conferidos pelo advogado; o modelo nunca os inventa.**
+- regras do nicho (em `nichos/<nicho>/conteudo.md`). Na advocacia, a publicidade segue as normas da OAB (por exemplo o Código de Ética e Disciplina e o Provimento 205/2021 do CFOAB; confirme a versão vigente com o advogado responsável): sem promessa de resultado e sem captação indevida de clientela. **Legislação, jurisprudência, número de OAB, credenciais e depoimentos vêm do briefing e são conferidos pelo advogado; o modelo nunca os inventa.**
 
 ### 13.2 Escolher no catálogo
 
@@ -574,8 +631,9 @@ Abra o catálogo e anote:
 Sessão nova:
 
 ```text
-Crie a [landing | site] do cliente [NOME] (nicho advocacia, área: [bancário | imobiliário | consumidor]).
-IDs, na ordem da regra de congruência (exemplo de landing):
+Crie a [landing | site] do cliente [NOME] (nicho [NICHO]; na advocacia, informe também a área: bancário, imobiliário ou consumidor).
+Leia o perfil nichos/[nicho]/ e siga a ordem de seções do nicho.yaml.
+IDs (exemplo de landing de advocacia):
 hero-b, problema-a, solucoes-a, requisitos-a, atuacao-c, autoridade-a, fundamentacao-a, faq-a, contato-a
 Tipografia: tipo-3 | Estilo: sobrio | Paleta: gerar a partir de #[COR1] e #[COR2]
 Material em clientes/[nome]/briefing.md e assets/.
@@ -643,7 +701,7 @@ git commit -m "feat: landing <nome>"
 
 **Todas as seções precisam estar preenchidas?** Não. A página tem só as seções listadas no `pagina.yaml`.
 
-- **Nível da página:** cada tipo tem estrutura completa (site: 8 seções; landing: 9), na ordem da [regra de congruência](#21-os-dois-tipos-de-página-e-a-regra-de-congruência). Omita uma seção só quando não houver material aprovado para ela (por exemplo `fundamentacao` sem legislação e jurisprudência conferidas pelo advogado), e nunca a preencha com texto inventado. O mínimo absoluto é `hero` e `contato`.
+- **Nível da página:** cada tipo de página do nicho tem estrutura completa (na advocacia: site com 8 seções e landing com 9), na ordem do `nicho.yaml` ([regra de congruência](#21-nichos-tipos-de-página-e-regra-de-congruência)). Omita uma seção só quando não houver material aprovado para ela (por exemplo `fundamentacao` sem legislação e jurisprudência conferidas pelo advogado), e nunca a preencha com texto inventado. O mínimo absoluto é `hero` e `contato`.
 - **Nível do campo:** numa seção escolhida, os campos **obrigatórios** do schema precisam estar preenchidos, senão o build falha. Os **opcionais** podem ficar vazios, e nesse caso o elemento correspondente some em vez de aparecer com texto de exemplo (**planejado:** o build atual ainda não suporta isso; hoje todo `{{campo}}` do HTML precisa ter valor).
 - **A variante depende do material.** Sem foto boa, escolha uma variante que não exija imagem (o `INDEX.md` informa se cada variante exige).
 
@@ -701,7 +759,7 @@ Depois do piloto, você já sabe quais perguntas do briefing e quais campos impo
 | `novo-cliente.mjs` | Você informa o nome e os IDs; ele cria `clientes/<nome>/` com `briefing.md` em branco, `assets/` e um `pagina.yaml` esqueleto com todos os campos obrigatórios, gerado a partir dos `schema.json` |
 | Otimização de imagens | No build, converte para WebP ou AVIF, gera tamanhos menores para celular e grava largura e altura |
 | Lista de pendências | Compara o `pagina.yaml` com os schemas e informa quais campos e imagens ainda faltam |
-| Esquemas por nicho | Para cada nicho, define seções obrigatórias, avisos regulatórios e perguntas do briefing |
+| `novo-nicho` | Dado o nome de um nicho, o modelo propõe o perfil (tipos de página, ordem, famílias, briefing, regras) e, aprovado, grava `nichos/<nicho>/` |
 | Comando `/nova-pagina` | Conduz o fluxo: briefing, esqueleto, copy, build, QA |
 
 **O que viabiliza isso:** cada campo do `schema.json` declara se é obrigatório, o tipo (texto, imagem, lista), o limite de tamanho e a fonte esperada (briefing, logo, foto). Com isso o esqueleto e a lista de pendências saem automaticamente. Por isso o Comando 1 da seção 9 já pede esses atributos.

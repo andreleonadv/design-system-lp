@@ -1,0 +1,32 @@
+# Modelo de perfil de nicho. Copie esta pasta para nichos/<nicho>/ e preencha.
+# Crie também briefing.md (perguntas do briefing) e conteudo.md (regras de conteúdo).
+# Veja nichos/advocacia/ como exemplo preenchido.
+nicho: "<nome do nicho>"
+descricao: "<para quem é e que tipo de página gera>"
+
+tipos:
+  landing:
+    descricao: "<qual é o objetivo desta landing>"
+    ordem: []            # IDs das famílias, na ordem da página (regra de congruência)
+    obrigatorias: [hero, contato]
+    congruencia: "<ex.: Reconhecimento → ... → Conversão>"
+  # site:                # opcional: só se o nicho tiver site institucional
+  #   ordem: []
+
+# Papel de cada família neste nicho. Reaproveite famílias que já existem em secoes/.
+# Crie família nova só se o nicho realmente precisar dela.
+secoes:
+  hero:
+    landing: "<papel do hero neste nicho>"
+
+regras:
+  nunca_inventar: []     # ex.: preços, endereço, depoimentos
+  proibido: []
+  termos_vetados: []
+  fonte_normativa: ""    # conselho profissional ou norma aplicável, se houver
+
+tom: ""
+cta_padrao: ""
+imagens:
+  preferir: ""
+  evitar: ""

@@ -1,0 +1,73 @@
+# Perfil de nicho: advocacia
+# Fonte de verdade da estrutura das páginas deste nicho.
+# Status: documentado. A validação automática (ordem, obrigatórias, termos vetados)
+# ainda NÃO está implementada no build.mjs nem no qa.mjs.
+nicho: advocacia
+descricao: "Escritórios e advogados: landing pages de serviços e site institucional."
+areas:
+  - "Direito Bancário"
+  - "Direito Imobiliário"
+  - "Direito do Consumidor"
+
+tipos:
+  site:
+    descricao: "Site institucional (8 seções)"
+    ordem: [hero, areas, servicos, atuacao, autoridade, conteudos, faq, contato]
+    obrigatorias: [hero, contato]
+    congruencia: "Apresentação → Áreas → Serviços → Atuação → Autoridade → Conteúdo → Dúvidas → Contato"
+  landing:
+    descricao: "Landing page de um serviço ou tema jurídico específico (9 seções)"
+    ordem: [hero, problema, solucoes, requisitos, atuacao, autoridade, fundamentacao, faq, contato]
+    obrigatorias: [hero, contato]
+    congruencia: "Reconhecimento → Problema → Solução → Requisitos → Processo → Autoridade → Fundamentação → Dúvidas → Conversão"
+
+# Papel de cada família de seção neste nicho.
+# Famílias compartilhadas entre site e landing: hero, atuacao, autoridade, faq, contato
+# (o schema delas precisa atender os dois tipos, com campos opcionais para o que muda).
+secoes:
+  hero:
+    site: "Hero institucional: apresentação do escritório, posicionamento e CTA."
+    landing: "Hero: título H1, subtítulo, imagem contextual quando pertinente e CTA."
+  problema:
+    landing: "Identificação do problema: situações jurídicas com as quais o visitante pode se identificar."
+  solucoes:
+    landing: "Possíveis soluções jurídicas: apresentação das alternativas legais."
+  requisitos:
+    landing: "Quem pode se beneficiar: requisitos e condições para utilização das medidas jurídicas."
+  areas:
+    site: "Áreas de atuação: Direito Bancário, Imobiliário e do Consumidor."
+  servicos:
+    site: "Serviços jurídicos: serviços específicos de cada área."
+  atuacao:
+    site: "Forma de atuação: explicação sobre o atendimento e a análise jurídica."
+    landing: "Como funciona a atuação: etapas do atendimento e CTA intermediário."
+  autoridade:
+    site: "Sobre o escritório: apresentação institucional, advogados e credenciais."
+    landing: "Autoridade profissional: apresentação do advogado, OAB e credenciais."
+  conteudos:
+    site: "Conteúdos jurídicos: artigos do blog e informações educativas."
+  fundamentacao:
+    landing: "Fundamentação jurídica: legislação, jurisprudência e explicações relevantes."
+  faq:
+    site: "Perguntas frequentes: esclarecimento das principais dúvidas."
+    landing: "Perguntas frequentes: dúvidas específicas sobre o serviço."
+  contato:
+    site: "Contato e CTA final: convite ao contato e canais de atendimento."
+    landing: "Encerramento e CTA final: conclusão e convite ao contato."
+
+regras:
+  nunca_inventar: [legislacao, jurisprudencia, numero_oab, credenciais, depoimentos]
+  proibido: ["promessa de resultado", "captação indevida de clientela"]
+  # Exemplos iniciais. O advogado responsável deve revisar esta lista.
+  termos_vetados:
+    - "garantimos"
+    - "resultado garantido"
+    - "100% de êxito"
+    - "ganho de causa garantido"
+  fonte_normativa: "Código de Ética e Disciplina da OAB e Provimento 205/2021 do CFOAB (confirmar a versão vigente)"
+
+tom: "sóbrio, claro e acolhedor"
+cta_padrao: "a definir"
+imagens:
+  preferir: "fotos reais dos advogados e do escritório"
+  evitar: "imagens de banco genéricas"
