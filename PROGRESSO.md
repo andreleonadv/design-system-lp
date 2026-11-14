@@ -12,6 +12,7 @@
 - Dependência única: `js-yaml` (parse do pagina.yaml). Rodar `npm install` após clonar.
 - Schema por SEÇÃO (`secoes/<secao>/schema.json`, versao 1), subconjunto de JSON Schema (object/string/array, required). Campo não declarado no schema = erro.
 - `pagina.yaml`: `pagina: {lang, titulo, descricao}` + `secoes: [{id, dados}]`. Tipografia/estilo (`tipo-N`, `estilo-*`) ainda NÃO implementados. Campos `nicho` e `tipo: site|landing` (build valida a ordem pelo `nicho.yaml`) são planejados, não implementados.
+- Template das variantes: `{{campo}}`, `{{#if}}`, `{{#each}}`, `{{this}}` (detalhes no CLAUDE.md). Campos opcionais, `<id>.js`, `custom.css` e `assets/` já são tratados pelo build.
 - Uso: `node build.mjs <cliente>` (padrão: teste) → `clientes/<cliente>/dist/{index.html,style.css}`.
 ## Em aberto (confirmar com o usuário)
 - Nomes das famílias de seção são propostas; confirmar.
@@ -23,7 +24,18 @@
 - Verificado: build do cliente teste OK; build falha (exit 1) com campo vazio e com `{{placeholder}}` sobrando.
 - Documentação com estrutura de site (8) e landing (9) da advocacia.
 - Perfis de nicho: `nichos/_modelo/` e `nichos/advocacia/` (nicho.yaml, briefing.md, conteudo.md); `CLAUDE.md` tornado genérico.
-## Próximo
-- Criar `INDEX.md` (1 linha por variante; hero-a ainda não está listada).
-- Revisar o schema do `hero` para atender site e landing (imagem opcional) — hoje exige titulo, subtitulo e cta.
-- Fase 1: `qa.mjs`, testes de `build.mjs`, build lendo `nicho.yaml` (ordem, obrigatórias), QA com termos vetados, seções na ordem de criação acima, `gerar-paleta.mjs`, tipografia/estilos.
+- Auditoria pré-seções (2026-11-14): `build.mjs` reescrito para suportar o que as seções exigem (ver "Erros encontrados"); `test/build.test.mjs` (16 testes, `npm test`); `.gitattributes` (LF); `package.json` com scripts `build`/`test`; schema do `hero` v2 (`imagem` opcional com `alt` obrigatório, `cta.url` com `format: url`).
+## Erros encontrados na auditoria (corrigidos)
+- Build não repetia listas (faq, passos, áreas) nem aceitava campo opcional → `{{#each}}`, `{{#if}}` e validação de opcionais.
+- Schema ignorava `minLength`/`enum`; campo opcional preenchido nunca era validado; URL `javascript:` passava → validação completa e `format: url`.
+- `<id>.js` (prometido no CLAUDE.md), `custom.css` e `assets/` não eram usados → agora tratados.
+- Número no YAML (telefone) dava erro sem dica → mensagem orienta a pôr aspas.
+- Docs afirmavam `qa.mjs`/`INDEX.md` como verificação, mas não existem → marcados como pendentes.
+## Ainda NÃO existe (pendente, nesta ordem, ANTES de criar seções)
+1. `qa.mjs` (README Passo 2): contraste, overflow 375/768/1280, alt, links vazios, hierarquia h1/h2, peso; screenshots via Chrome headless.
+2. `INDEX.md` (incluir `hero-a`) e lint de variantes (placeholders do HTML ⊆ schema; sem hex no CSS; mesmo `schema.json` por família).
+3. Tokens provisórios (Passo 3): o build só carrega `tokens/base.css`; falta decidir como o `pagina.yaml` escolhe `tipo-N`/`paleta`/`estilo` (bloco `tema`) e implementar no build.
+4. Decidir cabeçalho/rodapé, SEO básico (Open Graph, favicon, dados estruturados — hoje só `title` e `description`) e `nicho`/`tipo` no `pagina.yaml` com validação da ordem.
+## Próximo (sequência do README, uma etapa por sessão)
+- Passo 2: `qa.mjs`. Passo 3: `INDEX.md` + `lint.mjs`. Passo 4: tokens provisórios + `tema` no build. Passo 5: decisões estruturais. Só então o Passo 6: seção `problema` (o `hero-a` já existe; refinar com o Comando 3).
+- Depois: Passo 7+: build lendo `nicho.yaml` (ordem, obrigatórias), QA com termos vetados, `gerar-paleta.mjs`, tipografia/estilos.

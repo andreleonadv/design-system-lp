@@ -11,8 +11,10 @@ Este documento é um **tutorial passo a passo**. Quem ler do início ao fim sabe
 > Os números de economia de tokens citados aqui são **estimativas**, não medições.
 >
 > **Estado atual do código** (a fonte de verdade é o `PROGRESSO.md`):
-> - **Implementado (Fase 0):** `node build.mjs <cliente>`; `pagina.yaml` com o bloco `pagina` (lang, titulo, descricao) e `secoes: [{id, dados}]`; um `schema.json` por seção, com validação; falha em campo obrigatório vazio e em `{{placeholder}}` sobrando; `tokens/base.css`; a seção `hero-a`.
-> - **Ainda não implementado** (descrito neste tutorial como alvo): `qa.mjs`, `INDEX.md`, tema no `pagina.yaml` (cores, tipografia, estilo, paleta), `custom.css` por cliente, campos opcionais que somem, cópia e otimização de imagens, catálogo e as automações do Passo 9 (`novo-cliente.mjs` etc.).
+> - **Implementado (Fase 0 + auditoria):** `node build.mjs <cliente>`; `pagina.yaml` com o bloco `pagina` (lang, titulo, descricao) e `secoes: [{id, dados}]`; um `schema.json` por seção, com validação (obrigatórios, opcionais, `minLength`, `maxLength`, `enum`, `format: url`); templates com `{{campo}}`, `{{#if}}` e `{{#each}}`; falha em campo obrigatório vazio e em `{{placeholder}}` sobrando; `<id>.js` opcional, `custom.css` e `assets/` do cliente; `tokens/base.css`; a seção `hero-a` (schema v2); testes do build (`npm test`).
+> - **Ainda não implementado** (descrito neste tutorial como alvo): `qa.mjs`, `INDEX.md` e lint de variantes, tema no `pagina.yaml` (cores, tipografia, estilo, paleta), `nicho`/`tipo` com validação da ordem, SEO além de `title`/`description`, otimização de imagens, catálogo e as automações do Passo 9 (`novo-cliente.mjs` etc.).
+>
+> **Sequência certa (não pule):** Passo 0 ambiente → **1 Fase 0 (já feito)** → 2 QA → 3 `INDEX.md` e lint → 4 tokens provisórios e `tema` → 5 decisões estruturais → **só então** 6 criar seções. Sem os Passos 2 a 5, cada seção seria criada sem o juiz (QA), sem tema e sem registro, e teria de ser refeita depois.
 >
 > Quando uma parte for implementada, atualize esta lista.
 
@@ -26,34 +28,38 @@ Este documento é um **tutorial passo a passo**. Quem ler do início ao fim sabe
 3. [Estrutura de pastas](#3-estrutura-de-pastas)
 4. [Mapa do caminho (visão geral)](#4-mapa-do-caminho-visão-geral)
 5. [Passo 0 — Preparar o ambiente](#5-passo-0--preparar-o-ambiente)
-6. [Passo 1 — Fase 0: fundação](#6-passo-1--fase-0-fundação)
+6. [Passo 1 — Fase 0: fundação (concluído)](#6-passo-1--fase-0-fundação-concluído)
 7. [Passo 2 — QA automático](#7-passo-2--qa-automático)
-8. [Passo 3 — Tokens provisórios](#8-passo-3--tokens-provisórios)
-9. [Passo 4 — Criar uma seção (roteiro de 4 comandos)](#9-passo-4--criar-uma-seção-roteiro-de-4-comandos)
-10. [Como personalizar com referências](#10-como-personalizar-com-referências)
-11. [Passo 5 — Tipografias e paletas finais](#11-passo-5--tipografias-e-paletas-finais)
-12. [Passo 6 — Catálogo](#12-passo-6--catálogo)
-13. [Passo 7 — Criar a página de um cliente](#13-passo-7--criar-a-página-de-um-cliente)
-14. [Passo 8 — Congelar a v1 e entrar na rotina](#14-passo-8--congelar-a-v1-e-entrar-na-rotina)
-15. [Quando o cliente pede algo fora do catálogo](#15-quando-o-cliente-pede-algo-fora-do-catálogo)
-16. [Sessões, tokens e git](#16-sessões-tokens-e-git)
-17. [Comandos de referência](#17-comandos-de-referência)
-18. [Problemas comuns](#18-problemas-comuns)
-19. [Limites do sistema](#19-limites-do-sistema)
-20. [Glossário](#20-glossário)
+8. [Passo 3 — INDEX.md e lint das variantes](#8-passo-3--indexmd-e-lint-das-variantes)
+9. [Passo 4 — Tokens provisórios e tema](#9-passo-4--tokens-provisórios-e-tema)
+10. [Passo 5 — Decisões estruturais](#10-passo-5--decisões-estruturais)
+11. [Passo 6 — Criar uma seção (roteiro de 4 comandos)](#11-passo-6--criar-uma-seção-roteiro-de-4-comandos)
+12. [Como personalizar com referências](#12-como-personalizar-com-referências)
+13. [Passo 7 — Tipografias e paletas finais](#13-passo-7--tipografias-e-paletas-finais)
+14. [Passo 8 — Catálogo](#14-passo-8--catálogo)
+15. [Passo 9 — Criar a página de um cliente](#15-passo-9--criar-a-página-de-um-cliente)
+16. [Passo 10 — Congelar a v1 e entrar na rotina](#16-passo-10--congelar-a-v1-e-entrar-na-rotina)
+17. [Quando o cliente pede algo fora do catálogo](#17-quando-o-cliente-pede-algo-fora-do-catálogo)
+18. [Sessões, tokens e git](#18-sessões-tokens-e-git)
+19. [Comandos de referência](#19-comandos-de-referência)
+20. [Problemas comuns](#20-problemas-comuns)
+21. [Limites do sistema](#21-limites-do-sistema)
+22. [Glossário](#22-glossário)
 
 ---
 
 ## 0. Onde estou? (checklist de progresso)
 
-Marque conforme avançar. Cada item é explicado nos passos abaixo.
+Siga **de cima para baixo**. Cada item é explicado no passo de mesmo número. Estado em 2026-11-14.
 
-- [ ] Passo 0: ambiente pronto (Node, git, pasta, `CLAUDE.md`, `PROGRESSO.md`, commit inicial)
-- [ ] Passo 1: Fase 0 (build, tokens base, `hero-a`, página de teste)
+- [x] Passo 0: ambiente pronto (Node, git, pasta, `CLAUDE.md`, `PROGRESSO.md`, commit inicial)
+- [x] Passo 1: Fase 0 (build, tokens base, `hero-a`, página de teste) e auditoria do build (`npm test` passa)
 - [ ] Passo 2: `qa.mjs` funcionando
-- [ ] Passo 3: 1 tipografia e 1 paleta provisórias
-- [ ] Passo 4: seções criadas (marque cada uma)
-  - [ ] hero (landing e site)
+- [ ] Passo 3: `INDEX.md` (com `hero-a`) e lint das variantes
+- [ ] Passo 4: 1 tipografia, 1 paleta provisórias e bloco `tema` no build
+- [ ] Passo 5: decisões estruturais (cabeçalho/rodapé, SEO, `nicho`/`tipo` no `pagina.yaml`)
+- [ ] Passo 6: seções criadas (marque cada uma)
+  - [ ] hero (landing e site): `hero-a` existe; falta refinar e derivar as outras
   - [ ] problema (landing)
   - [ ] solucoes (landing)
   - [ ] requisitos (landing)
@@ -67,11 +73,11 @@ Marque conforme avançar. Cada item é explicado nos passos abaixo.
   - [ ] conteudos (site)
 
   A ordem acima é a de **criação** para o nicho piloto (advocacia): as 9 primeiras completam a landing; as 3 últimas completam o site. Ver [seção 2.1](#21-nichos-tipos-de-página-e-regra-de-congruência).
-- [ ] Passo 5: 5 tipografias e 5 paletas finais
-- [ ] Passo 6: catálogo gerado
-- [ ] Passo 7: piloto com cliente real
-- [ ] Passo 8: v1 congelada (`git tag v1`)
-- [ ] Passo 9 (opcional): automação de entrada (novo-cliente, imagens, pendências)
+- [ ] Passo 7: 5 tipografias e 5 paletas finais
+- [ ] Passo 8: catálogo gerado
+- [ ] Passo 9: piloto com cliente real
+- [ ] Passo 10: v1 congelada (`git tag v1`)
+- [ ] Passo 11 (opcional): automação de entrada (novo-cliente, imagens, pendências)
 
 ---
 
@@ -111,7 +117,7 @@ Marque conforme avançar. Cada item é explicado nos passos abaixo.
 | **Variante** | Uma versão estrutural de uma seção | `hero-a`, `hero-b`, `hero-c` |
 | **ID** | Nome único de uma variante, também usado como nome de arquivo | `hero-b` |
 | **Schema** (contrato) | Lista dos campos que uma seção aceita; igual para todas as variantes | `titulo`, `subtitulo`, `cta` |
-| **`pagina.yaml`** | A planta da página de um cliente: tema, IDs e conteúdo | ver Passo 7 |
+| **`pagina.yaml`** | A planta da página de um cliente: tema, IDs e conteúdo | ver Passo 9 |
 | **Build** | Script que monta o HTML final | `node build.mjs ...` |
 | **QA** | Script que verifica a página automaticamente | `node qa.mjs ...` |
 | **Catálogo** | Página gerada que mostra todas as variantes lado a lado | para **você** escolher |
@@ -240,7 +246,7 @@ Leia o CLAUDE.md e o PROGRESSO.md. Vamos criar o perfil do nicho [NICHO]. Ainda 
 Depois de aprovado, crie nichos/[nicho]/nicho.yaml, briefing.md e conteudo.md, usando nichos/_modelo/ como base.
 ```
 
-Depois, crie só as famílias que faltarem, pelo roteiro de 4 comandos do Passo 4. **Valide o formato do perfil com o segundo nicho antes de considerá-lo estável.**
+Depois, crie só as famílias que faltarem, pelo roteiro de 4 comandos do Passo 6. **Valide o formato do perfil com o segundo nicho antes de considerá-lo estável.**
 
 #### Decisões em aberto
 
@@ -258,6 +264,8 @@ Depois, crie só as famílias que faltarem, pelo roteiro de 4 comandos do Passo 
 ```
 design-system-lp/
   CLAUDE.md              # regras curtas (< 100 linhas), lidas pelo modelo a cada turno
+  package.json           # scripts: npm run build, npm test
+  test/                  # testes do build.mjs (node --test)
   PROGRESSO.md           # ponte entre sessões
   README.md              # este tutorial (para humanos)
   INDEX.md               # 1 linha por variante: o que é, quando usar, limites
@@ -280,7 +288,8 @@ design-system-lp/
     problema/ solucoes/ requisitos/ atuacao/ autoridade/
     fundamentacao/ faq/ contato/ areas/ servicos/ conteudos/   # 12 famílias (ver seção 2.1)
   build.mjs              # lê pagina.yaml e gera o HTML final
-  qa.mjs                 # verificações automáticas
+  qa.mjs                 # verificações automáticas (Passo 2)
+  lint.mjs               # confere variantes: schema, tokens, INDEX (Passo 3)
   catalogo/              # GERADO: mostruário de todas as variantes
   clientes/
     <nome>/
@@ -300,17 +309,21 @@ Cada arquivo `.html` de variante deve ter, no topo, um comentário com o ID e um
 ## 4. Mapa do caminho (visão geral)
 
 ```
-Passo 0  Ambiente
-Passo 1  Fase 0: fundação (build + hero-a + página de teste)
-Passo 2  QA automático
-Passo 3  Tokens provisórios (1 tipografia, 1 paleta)
-Passo 4  Para CADA seção:  definir → base → refinar com referências → derivar variantes
-Passo 5  Tipografias e paletas finais (5 de cada)
-Passo 6  Catálogo
-Passo 7  Piloto: página de um cliente real
-Passo 8  Congelar v1 → rotina diária
-Passo 9  (opcional) Automação de entrada: esqueleto, imagens, pendências
+Passo 0   Ambiente
+Passo 1   Fase 0: fundação (build + hero-a + página de teste)   [FEITO]
+Passo 2   QA automático (qa.mjs)
+Passo 3   INDEX.md e lint das variantes
+Passo 4   Tokens provisórios (1 tipografia, 1 paleta) + bloco tema no build
+Passo 5   Decisões estruturais (cabeçalho/rodapé, SEO, nicho/tipo)
+Passo 6   Para CADA seção:  definir → base → refinar com referências → derivar variantes
+Passo 7   Tipografias e paletas finais (5 de cada)
+Passo 8   Catálogo
+Passo 9   Piloto: página de um cliente real
+Passo 10  Congelar v1 → rotina diária
+Passo 11  (opcional) Automação de entrada: esqueleto, imagens, pendências
 ```
+
+Os Passos 2 a 5 são a **preparação**: criam o juiz (QA), o registro (INDEX), o tema e as decisões que toda seção usa. Pular qualquer um deles obriga a refazer as seções depois.
 
 Regra de ouro do processo: **uma etapa por sessão**, sempre terminando com `PROGRESSO.md` atualizado e commit.
 
@@ -322,7 +335,7 @@ Regra de ouro do processo: **uma etapa por sessão**, sempre terminando com `PRO
 
 **Objetivo:** ter pasta, git e os dois arquivos de instrução.
 
-1. Conferir ferramentas (Node 18 ou superior, git, Chrome ou Edge):
+1. Conferir ferramentas (Node 20 ou superior, git, Chrome ou Edge):
 
    ```bash
    node -v
@@ -379,7 +392,9 @@ Regra de ouro do processo: **uma etapa por sessão**, sempre terminando com `PRO
 
 ---
 
-## 6. Passo 1 — Fase 0: fundação
+## 6. Passo 1 — Fase 0: fundação (concluído)
+
+> **Já feito neste repositório.** Não rode o prompt abaixo de novo: ele só serve de registro e para recriar o sistema do zero. Para retomar, rode `npm install` e confira com `node build.mjs` e `npm test`.
 
 **Objetivo:** ter o motor funcionando com **uma** seção, antes de criar qualquer variante.
 
@@ -393,7 +408,7 @@ Leia o CLAUDE.md e o PROGRESSO.md. Fase 0, só isto: crie a estrutura de pastas,
 
 **Se o modelo propuser** framework, TypeScript ou algo "mais robusto": recuse. A simplicidade é o que economiza tokens.
 
-**Pronto quando:** o build gera `clientes/teste/dist/index.html` e ele abre no navegador.
+**Pronto quando:** o build gera `clientes/teste/dist/index.html`, ele abre no navegador e `npm test` passa.
 
 **Feche a sessão:** `PROGRESSO.md` atualizado e commit (`feat: fase 0 fundação`).
 
@@ -408,7 +423,7 @@ Leia o CLAUDE.md e o PROGRESSO.md. Fase 0, só isto: crie a estrutura de pastas,
 Sessão nova:
 
 ```text
-Leia o CLAUDE.md e o PROGRESSO.md. Crie qa.mjs que, para um cliente, verifica: placeholders {{...}} sobrando e campos obrigatórios vazios; contraste de texto sobre fundo; overflow horizontal em 375, 768 e 1280 px; imagens sem alt; links vazios ou "#"; ordem dos títulos (h1, h2); peso da página. Gere screenshots por viewport em arquivo usando Chrome headless (não o painel do app). Rode sobre clientes/teste e reporte. Não crie variantes novas.
+Leia o CLAUDE.md e o PROGRESSO.md. Rode npm install e npm test. Crie qa.mjs que, para um cliente, verifica: placeholders {{...}} sobrando e campos obrigatórios vazios; contraste de texto sobre fundo; overflow horizontal em 375, 768 e 1280 px; imagens sem alt; links vazios ou "#"; ordem dos títulos (h1, h2); peso da página. Gere screenshots por viewport em arquivo usando Chrome headless (não o painel do app). Rode sobre clientes/teste e reporte. Não crie variantes novas.
 ```
 
 **Por que Chrome headless:** o painel oculto do app não renderiza frames, então prints saem em branco e efeitos que dependem de rolagem não disparam.
@@ -419,23 +434,69 @@ Leia o CLAUDE.md e o PROGRESSO.md. Crie qa.mjs que, para um cliente, verifica: p
 
 ---
 
-## 8. Passo 3 — Tokens provisórios
+## 8. Passo 3 — INDEX.md e lint das variantes
 
-**Objetivo:** enquanto cria as seções, ter pelo menos uma tipografia e uma paleta reais para testar.
+**Objetivo:** criar o registro que o modelo lê para escolher variantes (`INDEX.md`) e um verificador que barra variantes fora do padrão antes de elas se espalharem.
+
+**Por que agora:** o `CLAUDE.md` exige uma linha no `INDEX.md` para toda variante nova, e o `hero-a` ainda não está lá. O lint evita os erros que o build não pega sozinho.
 
 Sessão nova:
 
 ```text
-Leia o CLAUDE.md e o PROGRESSO.md. Crie tokens/tipografia/tipo-1.css (fontes: [TÍTULO] e [TEXTO], do Google Fonts; escala de tamanhos, pesos e line-height) e tokens/paleta/paleta-1.css (tokens semânticos: --bg, --surface, --text, --muted, --accent, --on-accent, --border; cores: [...]). Verifique contraste AA. Aplique na página de teste e rode build + qa.
+Leia o CLAUDE.md e o PROGRESSO.md. Rode npm install e npm test. Crie INDEX.md com 1 linha por variante existente (hoje só hero-a: o que é, quando usar, limites, se exige imagem). Crie lint.mjs (com testes em test/) que, para todas as variantes de secoes/, verifica: (1) todo {{campo}} do .html existe no schema.json da família; (2) o .css não tem cor hex nem rgb() direta (só tokens var(--...)); (3) cada .html começa com comentário de ID e descrição; (4) cada variante está listada no INDEX.md; (5) todas as variantes da família usam o mesmo schema.json (um por pasta). Rode sobre o repositório, corrija o que reprovar e atualize o PROGRESSO.md. Não crie seções novas.
 ```
 
-As 5 tipografias e 5 paletas finais ficam para o Passo 5, quando você já tiver seções para testá-las.
+**Pronto quando:** `node lint.mjs` passa e o `INDEX.md` lista o `hero-a`. A partir daqui, a verificação de cada variante é `node build.mjs` + `node qa.mjs` + `node lint.mjs`.
 
-**Resumo:** 1 tipografia e 1 paleta provisórias bastam para desenvolver as seções.
+**Resumo:** o `INDEX.md` é o catálogo textual para o modelo; o lint garante que toda variante nova respeita o contrato.
 
 ---
 
-## 9. Passo 4 — Criar uma seção (roteiro de 4 comandos)
+## 9. Passo 4 — Tokens provisórios e tema
+
+**Objetivo:** ter pelo menos uma tipografia e uma paleta reais **e** um jeito de o `pagina.yaml` escolhê-las. Hoje o build só carrega `tokens/base.css`: arquivos `tipo-1.css` e `paleta-1.css` criados sem esta etapa **nunca entrariam na página**.
+
+Sessão nova:
+
+```text
+Leia o CLAUDE.md e o PROGRESSO.md. Rode npm install e npm test. Parte 1: crie tokens/tipografia/tipo-1.css (fontes: [TÍTULO] e [TEXTO], do Google Fonts; escala de tamanhos, pesos e line-height; acentos do português) e tokens/paleta/paleta-1.css (tokens semânticos: --bg, --surface, --text, --muted, --accent, --on-accent, --border; cores: [...]). Verifique contraste AA. Parte 2: implemente no build.mjs um bloco opcional "tema" no pagina.yaml ({tipografia: tipo-1, paleta: paleta-1, estilo: opcional}) que anexa o CSS correspondente ao style.css logo depois do base.css; id de tema inexistente faz o build falhar; sem bloco tema, o comportamento atual continua. Para fonte do Google Fonts, adicione o <link> no <head>. Escreva testes em test/ para o tema. Aplique tipo-1 e paleta-1 em clientes/teste/pagina.yaml e rode build + qa + lint. Atualize PROGRESSO.md e README (seção 13.4).
+```
+
+**Pronto quando:** `clientes/teste` builda com `tema: {tipografia: tipo-1, paleta: paleta-1}`, o QA passa e `npm test` cobre o tema.
+
+As 5 tipografias e 5 paletas finais ficam para o Passo 7, quando você já tiver seções para testá-las. `gerar-paleta.mjs` (cores da marca do cliente) também fica para lá.
+
+**Resumo:** 1 tipografia, 1 paleta e o bloco `tema` no build. Sem o bloco, os arquivos de tokens não chegam à página.
+
+---
+
+## 10. Passo 5 — Decisões estruturais
+
+**Objetivo:** fechar, **antes** de criar seções, o que muda o esqueleto de toda página. Decidir isso depois obriga a mexer em todas as variantes e em todos os `pagina.yaml`.
+
+Estas decisões são suas. O modelo propõe em texto, você aprova, e só então ele implementa.
+
+| Decisão | Opções | Efeito se mudar depois |
+|---|---|---|
+| **Cabeçalho e rodapé** | Entram como seções fixas de apoio (menu, links legais, aviso da OAB) ou ficam de fora | Nova família, novo schema e revisão de todas as páginas |
+| **SEO básico** | Hoje só `title` e `description`. Incluir Open Graph, favicon e dados estruturados? | Mudança no build e no bloco `pagina` do schema da página |
+| **`nicho` e `tipo` no `pagina.yaml`** | O build lê `nichos/<nicho>/nicho.yaml` e valida ordem e seções obrigatórias | Páginas já criadas precisam ganhar os campos |
+| **Famílias compartilhadas** | `hero`, `atuacao`, `autoridade`, `faq` e `contato` ficam únicas ou alguma se divide | Reescrita de schema e variantes |
+| **CTA padrão e referências visuais** | Definir (hoje "a definir") | Retrabalho de copy e de refinamento |
+
+Sessão nova:
+
+```text
+Leia o CLAUDE.md e o PROGRESSO.md. Passo 5, só decisões. Proponha em texto, com recomendação para cada item, e espere minha aprovação: (1) cabeçalho e rodapé: entram ou não, com quais campos; (2) SEO: o que o bloco "pagina" deve ter além de titulo, lang e descricao; (3) nicho e tipo no pagina.yaml e como o build valida a ordem pelo nicho.yaml; (4) se as 5 famílias compartilhadas ficam únicas. Depois de aprovado, implemente no build.mjs com testes, atualize clientes/teste/pagina.yaml, o CLAUDE.md, o README e o PROGRESSO.md.
+```
+
+**Pronto quando:** as decisões estão registradas no `PROGRESSO.md` (sem "a definir" nos itens acima), o build implementa o que foi aprovado e `npm test` passa.
+
+**Resumo:** cinco decisões que moldam toda página, tomadas uma vez, antes da primeira seção nova.
+
+---
+
+## 11. Passo 6 — Criar uma seção (roteiro de 4 comandos)
 
 Este é o **ciclo central**. Repita para cada seção, trocando `[SEÇÃO]`.
 
@@ -454,7 +515,7 @@ Este é o **ciclo central**. Repita para cada seção, trocando `[SEÇÃO]`.
 
 Atenção: esta é a ordem de **criação**. A ordem **na página** segue a regra de congruência da [seção 2.1](#21-nichos-tipos-de-página-e-regra-de-congruência). Nas famílias compartilhadas (`hero`, `atuacao`, `autoridade`, `faq`, `contato`), o schema deve atender site e landing, com campos opcionais para o que muda.
 
-**Pré-requisito:** Passos 1 a 3 concluídos.
+**Pré-requisito:** Passos 1 a 5 concluídos (build, QA, `INDEX.md`/lint, tema e decisões estruturais). Se algum faltar, volte a ele: criar seções antes obriga a refazê-las.
 
 ### Comando 1 — Definir (nada de código ainda)
 
@@ -491,7 +552,7 @@ Aprovado. Crie o schema.json e a variante [seção]-a (html + css) seguindo o CL
 **Quando usar:** com a base já validada (Comando 2) e, depois, em cada variante derivada, se quiser personalizá-la.
 **O que esperar:** de 2 a 3 rodadas de ajuste, no máximo, até a variante ficar como você quer.
 
-O prompt, as regras e as dicas de custo estão na [seção 10](#10-como-personalizar-com-referências). Em resumo: copie a técnica, nunca o conteúdo; a animação só enfeita; e dê feedback específico.
+O prompt, as regras e as dicas de custo estão na [seção 12](#12-como-personalizar-com-referências). Em resumo: copie a técnica, nunca o conteúdo; a animação só enfeita; e dê feedback específico.
 
 ### Comando 4 — Derivar as outras variantes e fechar
 
@@ -503,7 +564,7 @@ O prompt, as regras e as dicas de custo estão na [seção 10](#10-como-personal
 A base [seção]-a está aprovada. Crie as variantes [seção]-b até [seção]-[última] conforme os eixos aprovados, usando [seção]-a como referência de estrutura e o MESMO schema.json. Para cada uma: adicione ao INDEX.md (1 linha: o que é, quando usar, limites, se exige imagem), troque o ID no clientes/teste/pagina.yaml, rode build + qa. Ao terminar: atualize o PROGRESSO.md e faça um commit "feat: seção [SEÇÃO] (N variantes)".
 ```
 
-Cada variante derivada também pode passar pelo refinamento da [seção 10](#10-como-personalizar-com-referências) (uma por sessão).
+Cada variante derivada também pode passar pelo refinamento da [seção 12](#12-como-personalizar-com-referências) (uma por sessão).
 
 ### Checklist de fechamento de cada seção
 
@@ -512,6 +573,18 @@ Cada variante derivada também pode passar pelo refinamento da [seção 10](#10-
 - [ ] todas passam em build e QA com os mesmos dados de teste
 - [ ] `INDEX.md` com uma linha por variante
 - [ ] `PROGRESSO.md` atualizado e commit feito
+
+### Sintaxe dos templates (leia antes do Comando 2)
+
+O `build.mjs` entende só isto no `<id>.html`:
+
+| Marcação | Efeito |
+|---|---|
+| `{{campo}}`, `{{a.b}}` | Valor com HTML escapado. Vazio ou ausente = build falha |
+| `{{#if campo}}...{{/if}}` | Bloco só aparece se o campo opcional tiver valor |
+| `{{#each lista}}...{{/each}}` | Repete o bloco por item; dentro, `{{campo}}` lê do item (ou do escopo externo) e `{{this}}` é o item de uma lista de texto |
+
+Listas de tamanho variável (FAQ, passos, áreas) **sempre** com `each`. No `schema.json`, tudo o que não está em `required` é opcional; campos de link usam `"format": "url"`; imagem é um objeto `{src, alt}` com `alt` obrigatório. A raiz de cada variante leva `id="<familia>"` (ex.: `id="contato"`), para os links `#contato` funcionarem. JS opcional vai em `<id>.js` (vira `script.js`). A referência completa está no `CLAUDE.md`.
 
 ### Regras que mantêm o padrão
 
@@ -523,7 +596,7 @@ Cada variante derivada também pode passar pelo refinamento da [seção 10](#10-
 
 ---
 
-## 10. Como personalizar com referências
+## 12. Como personalizar com referências
 
 Aqui você deixa cada variante do seu jeito, usando outras páginas como inspiração para **efeitos e microanimações**.
 
@@ -553,7 +626,7 @@ Reproduza a TÉCNICA em CSS usando só os tokens. Não copie textos, imagens, lo
 
 ---
 
-## 11. Passo 5 — Tipografias e paletas finais
+## 13. Passo 7 — Tipografias e paletas finais
 
 **Objetivo:** fechar 5 tipografias, 5 paletas (presets) e 2 ou 3 pacotes de estilo, testados em seções reais.
 
@@ -590,7 +663,7 @@ Reproduza a TÉCNICA em CSS usando só os tokens. Não copie textos, imagens, lo
 
 ---
 
-## 12. Passo 6 — Catálogo
+## 14. Passo 8 — Catálogo
 
 **Objetivo:** uma página gerada que mostra todas as variantes, tipografias e paletas lado a lado, com os mesmos dados de teste. É a **sua** ferramenta para escolher.
 
@@ -606,11 +679,11 @@ O nome `catalogo.mjs` é uma sugestão; use o que o modelo criar e anote no `PRO
 
 ---
 
-## 13. Passo 7 — Criar a página de um cliente
+## 15. Passo 9 — Criar a página de um cliente
 
 Este é o fluxo completo. O **piloto** é a primeira vez; depois vira rotina.
 
-### 13.1 Briefing
+### 15.1 Briefing
 
 Crie `clientes/<nome>/briefing.md` e a pasta `assets/` com:
 - nome, serviços e diferenciais;
@@ -619,14 +692,14 @@ Crie `clientes/<nome>/briefing.md` e a pasta `assets/` com:
 - textos já aprovados;
 - regras do nicho (em `nichos/<nicho>/conteudo.md`). Na advocacia, a publicidade segue as normas da OAB (por exemplo o Código de Ética e Disciplina e o Provimento 205/2021 do CFOAB; confirme a versão vigente com o advogado responsável): sem promessa de resultado e sem captação indevida de clientela. **Legislação, jurisprudência, número de OAB, credenciais e depoimentos vêm do briefing e são conferidos pelo advogado; o modelo nunca os inventa.**
 
-### 13.2 Escolher no catálogo
+### 15.2 Escolher no catálogo
 
 Abra o catálogo e anote:
 - IDs das seções, na ordem;
 - tipografia (`tipo-N`) e estilo;
 - paleta: preset ou gerada a partir das cores da marca.
 
-### 13.3 Pedir a página ao modelo
+### 15.3 Pedir a página ao modelo
 
 Sessão nova:
 
@@ -640,7 +713,7 @@ Material em clientes/[nome]/briefing.md e assets/.
 Regras: leia só INDEX.md e os schema.json dos IDs escolhidos; não abra os arquivos das variantes. Não invente dado do cliente: se faltar um campo obrigatório, liste o que falta e pergunte. Escreva o pagina.yaml, rode build e qa, corrija o que o QA apontar e me diga o resultado.
 ```
 
-### 13.4 O que o `pagina.yaml` contém
+### 15.4 O que o `pagina.yaml` contém
 
 Formato **atual**, o que o `build.mjs` lê hoje (exemplo real de `clientes/teste/pagina.yaml`):
 
@@ -676,14 +749,14 @@ tema:
 
 **Regra de segurança:** campo obrigatório vazio ou `{{placeholder}}` sobrando **faz o build falhar**. O sistema nunca preenche dado do cliente com valor inventado.
 
-### 13.5 Revisar e ajustar
+### 15.5 Revisar e ajustar
 
 1. Abra `clientes/<nome>/dist/index.html` no navegador e olhe no celular e no desktop.
 2. Peça ajustes de **copy e imagens** de forma específica.
-3. Ajustes visuais pequenos vão no `custom.css` do cliente (ver [seção 15](#15-quando-o-cliente-pede-algo-fora-do-catálogo)). **Planejado:** o build ainda não carrega esse arquivo.
+3. Ajustes visuais pequenos vão no `custom.css` do cliente (ver [seção 17](#17-quando-o-cliente-pede-algo-fora-do-catálogo)). 
 4. Rode o QA de novo.
 
-### 13.6 Fechar
+### 15.6 Fechar
 
 `PROGRESSO.md` (só se aprendeu algo para o sistema) e commit da pasta do cliente:
 
@@ -695,14 +768,14 @@ git add clientes/<nome>
 git commit -m "feat: landing <nome>"
 ```
 
-**No piloto,** anote o que faltou no sistema (campo, variante, limite). Isso alimenta o Passo 8.
+**No piloto,** anote o que faltou no sistema (campo, variante, limite). Isso alimenta o Passo 10.
 
-### 13.7 Seções opcionais, copy e imagens
+### 15.7 Seções opcionais, copy e imagens
 
 **Todas as seções precisam estar preenchidas?** Não. A página tem só as seções listadas no `pagina.yaml`.
 
 - **Nível da página:** cada tipo de página do nicho tem estrutura completa (na advocacia: site com 8 seções e landing com 9), na ordem do `nicho.yaml` ([regra de congruência](#21-nichos-tipos-de-página-e-regra-de-congruência)). Omita uma seção só quando não houver material aprovado para ela (por exemplo `fundamentacao` sem legislação e jurisprudência conferidas pelo advogado), e nunca a preencha com texto inventado. O mínimo absoluto é `hero` e `contato`.
-- **Nível do campo:** numa seção escolhida, os campos **obrigatórios** do schema precisam estar preenchidos, senão o build falha. Os **opcionais** podem ficar vazios, e nesse caso o elemento correspondente some em vez de aparecer com texto de exemplo (**planejado:** o build atual ainda não suporta isso; hoje todo `{{campo}}` do HTML precisa ter valor).
+- **Nível do campo:** numa seção escolhida, os campos **obrigatórios** do schema precisam estar preenchidos, senão o build falha. Os **opcionais** podem ficar vazios, e nesse caso o elemento correspondente some em vez de aparecer com texto de exemplo: na variante, envolva-o em `{{#if campo}}...{{/if}}` (implementado).
 - **A variante depende do material.** Sem foto boa, escolha uma variante que não exija imagem (o `INDEX.md` informa se cada variante exige).
 
 **Como alimentar a copy:**
@@ -727,7 +800,7 @@ git commit -m "feat: landing <nome>"
 
 ---
 
-## 14. Passo 8 — Congelar a v1 e entrar na rotina
+## 16. Passo 10 — Congelar a v1 e entrar na rotina
 
 1. Corrija contratos e `INDEX.md` com o que o piloto mostrou (versione o schema se mudar).
 2. Faça 1 ou 2 pilotos antes de ampliar variantes.
@@ -750,7 +823,7 @@ git commit -m "feat: landing <nome>"
 5. A partir daí, novas variantes só entram **quando uma página real pedir**.
 6. **Regra dos dois:** se o mesmo ajuste for pedido em 2 clientes, vira opção ou variante do sistema.
 
-### 14.1 Passo 9 (opcional): automação de entrada
+### 16.1 Passo 11 (opcional): automação de entrada
 
 Depois do piloto, você já sabe quais perguntas do briefing e quais campos importam. É a hora de automatizar a entrada de cada cliente. Estes scripts ainda **não existem**: são propostas para pedir ao modelo, uma por sessão.
 
@@ -762,7 +835,7 @@ Depois do piloto, você já sabe quais perguntas do briefing e quais campos impo
 | `novo-nicho` | Dado o nome de um nicho, o modelo propõe o perfil (tipos de página, ordem, famílias, briefing, regras) e, aprovado, grava `nichos/<nicho>/` |
 | Comando `/nova-pagina` | Conduz o fluxo: briefing, esqueleto, copy, build, QA |
 
-**O que viabiliza isso:** cada campo do `schema.json` declara se é obrigatório, o tipo (texto, imagem, lista), o limite de tamanho e a fonte esperada (briefing, logo, foto). Com isso o esqueleto e a lista de pendências saem automaticamente. Por isso o Comando 1 da seção 9 já pede esses atributos.
+**O que viabiliza isso:** cada campo do `schema.json` declara se é obrigatório, o tipo (texto, imagem, lista), o limite de tamanho e a fonte esperada (briefing, logo, foto). Com isso o esqueleto e a lista de pendências saem automaticamente. Por isso o Comando 1 da seção 11 já pede esses atributos.
 
 **Fluxo ideal de ponta a ponta:**
 
@@ -777,31 +850,31 @@ novo-cliente → cliente responde o briefing → modelo preenche o pagina.yaml
 
 ---
 
-## 15. Quando o cliente pede algo fora do catálogo
+## 17. Quando o cliente pede algo fora do catálogo
 
 | Situação | O que fazer |
 |---|---|
 | Ajuste visual pequeno (cor de um botão, espaçamento) | `clientes/<nome>/custom.css`, só com sobrescritas |
 | Um campo a mais numa seção | Campo **opcional** no `schema.json` (versione) |
-| Seção totalmente nova | Crie variante nova pelo roteiro do Passo 4 |
+| Seção totalmente nova | Crie variante nova pelo roteiro do Passo 6 |
 | Pedido repetido em 2 clientes | Promova para o sistema (variante ou opção) |
 
 `custom.css` **não cria componentes novos**: só ajusta o existente.
 
-**Estado atual:** o `build.mjs` ainda **não carrega** o `custom.css` do cliente. Para passar a usá-lo, peça ao modelo para incluir esse arquivo no build, anexando-o ao `style.css` depois dos CSS das seções, para que as sobrescritas valham. Até lá, um ajuste pequeno exige alterar o CSS da própria variante.
+**Estado atual:** o `build.mjs` carrega `clientes/<nome>/custom.css` (se existir) e o anexa ao `style.css` depois dos CSS das seções, para que as sobrescritas valham. A pasta `clientes/<nome>/assets/` também é copiada para `dist/assets/`.
 
 **Resumo:** pequeno ajuste vai no `custom.css`; o que se repete entra no sistema.
 
 ---
 
-## 16. Sessões, tokens e git
+## 18. Sessões, tokens e git
 
 **Por que uma etapa por sessão:** a cada mensagem o modelo relê **toda** a conversa. Sessões longas custam mais e confundem. Sessões curtas começam leves lendo só `CLAUDE.md` e `PROGRESSO.md`.
 
 **Abertura de toda sessão:**
 
 ```text
-Leia o CLAUDE.md e o PROGRESSO.md e faça a próxima etapa.
+Leia o CLAUDE.md e o PROGRESSO.md, rode npm install e npm test, e faça a próxima etapa.
 ```
 
 **Fechamento de toda sessão:**
@@ -827,7 +900,7 @@ Atualize o PROGRESSO.md (feito, decisões, próximo) e faça o commit desta etap
 
 ---
 
-## 17. Comandos de referência
+## 19. Comandos de referência
 
 **Git (rode separados no PowerShell do Windows 5.1):**
 
@@ -859,6 +932,12 @@ node build.mjs <cliente>
 
 Sem argumento, o build usa o cliente `teste`. Ele lê `clientes/<cliente>/pagina.yaml` e gera `clientes/<cliente>/dist/index.html` e `style.css`. Antes do primeiro uso, rode `npm install` (a única dependência é o `js-yaml`).
 
+Testes do build:
+
+```bash
+npm test
+```
+
 O QA ainda **não existe**. Depois do Passo 2, o comando será algo como (confirme o nome real quando for criado):
 
 ```bash
@@ -879,7 +958,7 @@ git --version
 
 ---
 
-## 18. Problemas comuns
+## 20. Problemas comuns
 
 | Sintoma | Causa provável | Solução |
 |---|---|---|
@@ -890,6 +969,9 @@ git --version
 | Screenshot em branco | Painel oculto do app não renderiza | Usar Chrome headless |
 | Efeito de rolagem não aparece no print | Conteúdo depende de animação para ficar visível | Conteúdo deve ser visível sem animação |
 | Build falha com campo vazio | Comportamento esperado | Preencher o campo no `pagina.yaml` |
+| `esperado texto` num telefone ou número | O YAML converteu o valor em número | Pôr aspas: `telefone: "11999999999"` |
+| Texto cortado depois de `#` ou `:` | O YAML leu como comentário ou chave | Pôr o texto entre aspas |
+| `npm test` ou build dizem `Cannot find package 'js-yaml'` | Falta `npm install` (também em worktree novo) | Rodar `npm install` |
 | Variante nova quebra outras | Schema alterado | Versionar o schema e revisar a seção toda |
 | Páginas parecidas demais | Pouca variedade de tokens | Usar mais estilos, tipografias e `custom.css` |
 | Modelo propõe framework | Tendência a "robustecer" | Recusar; manter HTML/CSS estático |
@@ -898,7 +980,7 @@ git --version
 
 ---
 
-## 19. Limites do sistema
+## 21. Limites do sistema
 
 - **Fotos e textos** continuam sendo o gargalo; o sistema acelera layout, não conteúdo.
 - **Variantes nunca usadas** viram peso morto: corte.
@@ -912,7 +994,7 @@ git --version
 
 ---
 
-## 20. Glossário
+## 22. Glossário
 
 - **Build:** script que transforma `pagina.yaml` + seções + tokens em HTML final.
 - **Catálogo:** página gerada com todas as variantes, para você escolher visualmente.

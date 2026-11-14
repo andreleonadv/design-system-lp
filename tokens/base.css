@@ -32,6 +32,10 @@
   --radius: 0.5rem;
   --container: 72rem;
 
+  /* Movimento (usado por todas as animações) */
+  --dur: 250ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
   /* Paleta de teste (tokens semânticos) */
   --bg: #ffffff;
   --surface: #f4f5f7;

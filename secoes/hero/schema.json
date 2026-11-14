@@ -1,5 +1,5 @@
 {
-  "versao": 1,
+  "versao": 2,
   "secao": "hero",
   "type": "object",
   "required": ["titulo", "subtitulo", "cta"],
@@ -11,7 +11,15 @@
       "required": ["texto", "url"],
       "properties": {
         "texto": { "type": "string", "minLength": 1 },
-        "url": { "type": "string", "minLength": 1 }
+        "url": { "type": "string", "minLength": 1, "format": "url" }
+      }
+    },
+    "imagem": {
+      "type": "object",
+      "required": ["src", "alt"],
+      "properties": {
+        "src": { "type": "string", "minLength": 1 },
+        "alt": { "type": "string", "minLength": 1 }
       }
     }
   }

@@ -2,6 +2,14 @@
   "name": "design-system-lp",
   "private": true,
   "type": "module",
-  "scripts": { "build": "node build.mjs" },
-  "dependencies": { "js-yaml": "4.1.0" }
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "js-yaml": "4.1.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
 }

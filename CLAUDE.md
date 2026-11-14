@@ -39,6 +39,23 @@ e novas, perguntas do briefing, regras) e esperar aprovação antes de criar arq
 - `pagina.yaml` com `nicho` e `tipo` (e validação da ordem pelo build) é PLANEJADO,
 ainda não implementado.
 
+## Contrato técnico das variantes (build.mjs)
+
+- `<id>.html` usa: `{{campo}}` (valor escapado; vazio = build falha), `{{#if campo}}...{{/if}}`
+(campo opcional: o bloco some se vazio), `{{#each lista}}...{{/each}}` (dentro, `{{campo}}` lê
+do item ou do escopo externo; `{{this}}` = item de lista de texto). Listas de tamanho variável
+SEMPRE com `each`; nunca `{{lista.0.x}}`.
+- `schema.json` (subconjunto de JSON Schema): `type`, `required`, `properties`, `items`,
+`minLength`, `maxLength`, `maxItems`, `enum`, `format: "url"`. Fora de `required` = opcional
+(vazio passa; preenchido é validado). Campo não declarado = erro. Campo de URL usa `format: "url"`
+(bloqueia `javascript:`). Campos de imagem: objeto `{src, alt}` com `alt` obrigatório.
+- Arquivos opcionais: `<id>.js` vira `dist/script.js` (`defer`); `clientes/<nome>/custom.css` é
+anexado por último ao `style.css`; `clientes/<nome>/assets/` é copiado para `dist/assets/`.
+- `lint.mjs` (Passo 3 do README) ainda não existe. A raiz de cada variante leva `id="<familia>"` (ex.: `id="contato"`) para os links `#contato` do CTA.
+- No `pagina.yaml`, SEMPRE entre aspas: textos com `:` ou `#`, telefones, números e yes/no
+(senão o YAML os converte e o build acusa "esperado texto").
+- Todo `<id>.html` começa com comentário de 1 linha (ID e descrição). Não escrever `{{` em comentários.
+
 ## Referências, efeitos e animações
 
 - Referência (link ou print) é fonte de TÉCNICA, nunca de conteúdo: não copiar
@@ -56,10 +73,11 @@ exige revisar todas as variantes da seção e incrementar `versao`.
 
 - Para montar uma página: ler só `INDEX.md`, os `schema.json` dos IDs escolhidos e o
 perfil do nicho. NÃO abrir os arquivos das variantes, salvo para criar ou corrigir uma.
-- Verificação deste projeto = `node build.mjs` + `node qa.mjs`. Não usar agentes
-de code-review, planner ou TDD amplo a cada edição (isto substitui as regras
-globais de 80% de cobertura e review automático). Testes só para build.mjs,
-qa.mjs e gerar-paleta.mjs.
+- Verificação deste projeto = `node build.mjs <cliente>` + `node qa.mjs <cliente>`.
+`qa.mjs` AINDA NÃO EXISTE (é o Passo 2 da sequência do README); até lá a verificação é build + `npm test`.
+Não usar agentes de code-review, planner ou TDD amplo a cada edição (isto substitui as
+regras globais de 80% de cobertura e review automático). Testes só para build.mjs,
+qa.mjs e gerar-paleta.mjs (`npm test` = `node --test`, arquivos em `test/`).
 - Screenshots via Chrome headless para arquivo; não usar o painel do app.
 - Fazer uma etapa por sessão. Ao terminar, atualizar `PROGRESSO.md`.
 - Mudança de contrato (schema) exige aviso e incremento de `versao`.
