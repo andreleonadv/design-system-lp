@@ -5,6 +5,8 @@
 // Falha em campo obrigatório vazio e em {{placeholder}} sobrando.
 //
 // Template das variantes (<id>.html):
+// Bloco opcional `tema` no pagina.yaml: {tipografia: tipo-1, paleta: paleta-1, estilo: estilo-x}.
+//
 //   {{campo}} / {{a.b}}            valor escapado; vazio ou ausente = erro
 //   {{#if campo}}...{{/if}}        só renderiza se o campo (opcional) tiver valor
 //   {{#each lista}}...{{/each}}    repete para cada item; dentro, {{campo}} lê do item
@@ -176,6 +178,46 @@ export function montarSecao(item, indice) {
   return { erros, html, css: readFileSync(arqCss, 'utf8'), js: lerOpcional(join(dir, `${item.id}.js`)) };
 }
 
+const TEMA_TIPOS = { tipografia: 'tipo', paleta: 'paleta', estilo: 'estilo' };
+const ID_TEMA = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const FONTES = /^\/\*\s*google-fonts:\s*(\S+)\s*\*\//;
+
+/**
+ * Bloco opcional `tema: {tipografia: tipo-1, paleta: paleta-1, estilo: estilo-x}`.
+ * Cada id aponta para tokens/<tipografia|paleta|estilo>/<id>.css (prefixo obrigatório: tipo-, paleta-, estilo-).
+ * Se o CSS tiver o comentário `google-fonts: family=...` na 1ª linha, devolve a URL em `fontes`.
+ */
+export function carregarTema(tema, rotulo = 'tema') {
+  const erros = [];
+  if (tema === undefined || tema === null) return { erros, css: '', fontes: [] };
+  if (typeof tema !== 'object' || Array.isArray(tema)) {
+    return { erros: [`${rotulo}: esperado objeto {tipografia, paleta, estilo}`], css: '', fontes: [] };
+  }
+  for (const chave of Object.keys(tema)) {
+    if (!TEMA_TIPOS[chave]) erros.push(`${rotulo}.${chave}: campo desconhecido (use tipografia, paleta ou estilo)`);
+  }
+  const partes = [];
+  const fontes = [];
+  for (const [chave, prefixo] of Object.entries(TEMA_TIPOS)) {
+    const id = tema[chave];
+    if (id === undefined || id === null || id === '') continue;
+    if (typeof id !== 'string' || !ID_TEMA.test(id) || !id.startsWith(`${prefixo}-`)) {
+      erros.push(`${rotulo}.${chave}: id inválido "${id}" (esperado ${prefixo}-<nome>)`);
+      continue;
+    }
+    const arq = join(RAIZ, 'tokens', chave, `${id}.css`);
+    if (!existsSync(arq)) {
+      erros.push(`${rotulo}.${chave}: "${id}" não existe (tokens/${chave}/${id}.css)`);
+      continue;
+    }
+    const css = readFileSync(arq, 'utf8');
+    const f = FONTES.exec(css);
+    if (f) fontes.push(`https://fonts.googleapis.com/css2?${f[1]}`);
+    partes.push(css);
+  }
+  return { erros, css: partes.join('\n'), fontes };
+}
+
 /** `extras.customCss`: sobrescritas do cliente, anexadas depois do CSS das seções. */
 export function montarPagina(pagina, extras = {}) {
   const erros = [];
@@ -191,6 +233,8 @@ export function montarPagina(pagina, extras = {}) {
 
   const resultados = pagina.secoes.map((item, i) => montarSecao(item, i));
   for (const r of resultados) erros.push(...r.erros);
+  const tema = carregarTema(pagina.tema);
+  erros.push(...tema.erros);
   if (erros.length) return { erros };
 
   const { lang, titulo, descricao } = pagina.pagina;
@@ -202,7 +246,10 @@ export function montarPagina(pagina, extras = {}) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapeHtml(titulo)}</title>
 <meta name="description" content="${escapeHtml(descricao)}">
-<link rel="stylesheet" href="style.css">
+${tema.fontes.length ? `<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+${tema.fontes.map((u) => `<link rel="stylesheet" href="${escapeHtml(u)}">`).join('\n')}
+` : ''}<link rel="stylesheet" href="style.css">
 </head>
 <body>
 ${resultados.map((r) => r.html).join('\n')}
@@ -210,7 +257,7 @@ ${js ? '<script src="script.js" defer></script>\n' : ''}</body>
 </html>
 `;
   const baseCss = readFileSync(join(RAIZ, 'tokens', 'base.css'), 'utf8');
-  const css = [baseCss, ...new Set(resultados.map((r) => r.css)), extras.customCss ?? ''].join('\n');
+  const css = [baseCss, tema.css, ...new Set(resultados.map((r) => r.css)), extras.customCss ?? ''].join('\n');
   return { erros, html, css, js };
 }
 

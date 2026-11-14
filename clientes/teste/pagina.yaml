@@ -2,6 +2,9 @@ pagina:
   lang: pt-BR
   titulo: Cliente Teste
   descricao: Página de teste da fundação do design system.
+tema:
+  tipografia: tipo-1
+  paleta: paleta-1
 secoes:
   - id: hero-a
     dados:

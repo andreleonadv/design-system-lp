@@ -1,0 +1,10 @@
+/* paleta-1: sóbria (azul-marinho sobre branco). Tokens semânticos; contraste AA verificado (ver PROGRESSO.md). */
+:root {
+  --bg: #ffffff;
+  --surface: #f3f5f8;
+  --text: #15191f;
+  --muted: #4d5666;
+  --accent: #1b3a6b;
+  --on-accent: #ffffff;
+  --border: #d3d9e2;
+}
