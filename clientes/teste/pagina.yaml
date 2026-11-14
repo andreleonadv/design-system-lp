@@ -1,0 +1,12 @@
+pagina:
+  lang: pt-BR
+  titulo: Cliente Teste
+  descricao: Página de teste da fundação do design system.
+secoes:
+  - id: hero-a
+    dados:
+      titulo: Título de teste da página
+      subtitulo: Subtítulo de teste para validar o build da fundação.
+      cta:
+        texto: Falar agora
+        url: "#contato"
