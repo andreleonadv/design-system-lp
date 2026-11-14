@@ -1,0 +1,18 @@
+{
+  "versao": 1,
+  "secao": "hero",
+  "type": "object",
+  "required": ["titulo", "subtitulo", "cta"],
+  "properties": {
+    "titulo": { "type": "string", "minLength": 1 },
+    "subtitulo": { "type": "string", "minLength": 1 },
+    "cta": {
+      "type": "object",
+      "required": ["texto", "url"],
+      "properties": {
+        "texto": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
