@@ -59,6 +59,7 @@ Marque conforme avançar. Cada item é explicado nos passos abaixo.
 - [ ] Passo 6: catálogo gerado
 - [ ] Passo 7: piloto com cliente real
 - [ ] Passo 8: v1 congelada (`git tag v1`)
+- [ ] Passo 9 (opcional): automação de entrada (novo-cliente, imagens, pendências)
 
 ---
 
@@ -174,6 +175,7 @@ Passo 5  Tipografias e paletas finais (5 de cada)
 Passo 6  Catálogo
 Passo 7  Piloto: página de um cliente real
 Passo 8  Congelar v1 → rotina diária
+Passo 9  (opcional) Automação de entrada: esqueleto, imagens, pendências
 ```
 
 Regra de ouro do processo: **uma etapa por sessão**, sempre terminando com `PROGRESSO.md` atualizado e commit.
@@ -327,7 +329,7 @@ Este é o **ciclo central**. Repita para cada seção, trocando `[SEÇÃO]`.
 
 ```text
 Leia o CLAUDE.md e o PROGRESSO.md. Vamos criar a seção [SEÇÃO]. Ainda NÃO escreva código de variante. Entregue só:
-1) Os campos do schema.json da seção (obrigatórios, opcionais, limites de tamanho).
+1) Os campos do schema.json da seção (obrigatórios ou opcionais, tipo: texto/imagem/lista, limite de tamanho e fonte esperada: briefing, logo ou foto).
 2) Os eixos de variação: [N] variantes que difiram em ESTRUTURA, com uma linha cada (o que é e quando usar).
 3) Qual será a variante base (a).
 Espere minha aprovação.
@@ -362,7 +364,7 @@ O prompt, as regras e as dicas de custo estão na [seção 10](#10-como-personal
 **O que esperar:** variantes novas na página de teste, `INDEX.md` e `PROGRESSO.md` atualizados e um commit da seção. Como o contrato já existe, esta etapa pode ser feita com um modelo mais barato.
 
 ```text
-A base [seção]-a está aprovada. Crie as variantes [seção]-b até [seção]-[última] conforme os eixos aprovados, usando [seção]-a como referência de estrutura e o MESMO schema.json. Para cada uma: adicione ao INDEX.md (1 linha: o que é, quando usar, limites), troque o ID no clientes/teste/pagina.yaml, rode build + qa. Ao terminar: atualize o PROGRESSO.md e faça um commit "feat: seção [SEÇÃO] (N variantes)".
+A base [seção]-a está aprovada. Crie as variantes [seção]-b até [seção]-[última] conforme os eixos aprovados, usando [seção]-a como referência de estrutura e o MESMO schema.json. Para cada uma: adicione ao INDEX.md (1 linha: o que é, quando usar, limites, se exige imagem), troque o ID no clientes/teste/pagina.yaml, rode build + qa. Ao terminar: atualize o PROGRESSO.md e faça um commit "feat: seção [SEÇÃO] (N variantes)".
 ```
 
 Cada variante derivada também pode passar pelo refinamento da [seção 10](#10-como-personalizar-com-referências) (uma por sessão).
@@ -549,6 +551,32 @@ git commit -m "feat: landing <nome>"
 
 **No piloto,** anote o que faltou no sistema (campo, variante, limite). Isso alimenta o Passo 8.
 
+### 13.7 Seções opcionais, copy e imagens
+
+**Todas as seções precisam estar preenchidas?** Não. A página tem só as seções listadas no `pagina.yaml`.
+
+- **Nível da página:** recomenda-se um mínimo fixo de **hero, CTA e rodapé**. O resto é opcional (sem depoimentos, não coloque `prova-social`).
+- **Nível do campo:** numa seção escolhida, os campos **obrigatórios** do schema precisam estar preenchidos, senão o build falha. Os **opcionais** podem ficar vazios, e nesse caso o elemento correspondente some em vez de aparecer com texto de exemplo.
+- **A variante depende do material.** Sem foto boa, escolha uma variante que não exija imagem (o `INDEX.md` informa se cada variante exige).
+
+**Como alimentar a copy:**
+
+1. Use um `briefing.md` estruturado: serviços, diferenciais, público, contatos, CTA, textos já aprovados e regras do nicho. Pode virar um formulário (por exemplo Google Forms) que o cliente responde sozinho.
+2. O modelo lê o briefing e preenche o `pagina.yaml` seguindo o schema de cada seção e o esquema de conteúdo do nicho.
+3. Cada trecho é marcado como `briefing` (veio do cliente) ou `gerado` (o modelo redigiu a partir do briefing), para facilitar a sua revisão.
+4. O que o briefing não traz vira **lista de pendências**. O modelo não inventa dado do cliente.
+5. **Você aprova a copy.** Em nichos regulados (advocacia, saúde) isso é obrigatório.
+
+**Como alimentar as imagens:**
+
+1. Coloque os arquivos em `clientes/<nome>/assets/` com nomes padronizados: `logo.svg`, `hero.jpg`, `equipe-1.jpg`, `equipe-2.jpg`.
+2. O `pagina.yaml` aponta para esses arquivos. O texto alternativo (`alt`) é **obrigatório**, e o QA reprova imagem sem ele.
+3. Imagem obrigatória que faltar faz o build falhar (ou você troca por uma variante sem imagem).
+4. Fotos do cliente, da equipe e do escritório precisam vir do cliente. Imagens de banco ou geradas por IA servem só de apoio e, em advocacia e saúde, costumam enfraquecer a credibilidade; confira também a licença.
+5. **Placeholder nunca vai ao ar:** o build precisa barrar.
+
+**Resumo:** só entram as seções listadas, com o mínimo hero, CTA e rodapé. Copy vem do briefing, com origem marcada e pendências listadas. Imagens ficam em `assets/` com `alt` obrigatório, e nada de placeholder em produção.
+
 **Resumo:** briefing, escolha de IDs no catálogo, prompt de criação, `pagina.yaml` com a copy, build e QA, revisão sua, commit. Nunca invente dado do cliente.
 
 ---
@@ -575,6 +603,29 @@ git commit -m "feat: landing <nome>"
 
 5. A partir daí, novas variantes só entram **quando uma página real pedir**.
 6. **Regra dos dois:** se o mesmo ajuste for pedido em 2 clientes, vira opção ou variante do sistema.
+
+### 14.1 Passo 9 (opcional): automação de entrada
+
+Depois do piloto, você já sabe quais perguntas do briefing e quais campos importam. É a hora de automatizar a entrada de cada cliente. Estes scripts ainda **não existem**: são propostas para pedir ao modelo, uma por sessão.
+
+| Automação | O que faz |
+|---|---|
+| `novo-cliente.mjs` | Você informa o nome e os IDs; ele cria `clientes/<nome>/` com `briefing.md` em branco, `assets/` e um `pagina.yaml` esqueleto com todos os campos obrigatórios, gerado a partir dos `schema.json` |
+| Otimização de imagens | No build, converte para WebP ou AVIF, gera tamanhos menores para celular e grava largura e altura |
+| Lista de pendências | Compara o `pagina.yaml` com os schemas e informa quais campos e imagens ainda faltam |
+| Esquemas por nicho | Para cada nicho, define seções obrigatórias, avisos regulatórios e perguntas do briefing |
+| Comando `/nova-pagina` | Conduz o fluxo: briefing, esqueleto, copy, build, QA |
+
+**O que viabiliza isso:** cada campo do `schema.json` declara se é obrigatório, o tipo (texto, imagem, lista), o limite de tamanho e a fonte esperada (briefing, logo, foto). Com isso o esqueleto e a lista de pendências saem automaticamente. Por isso o Comando 1 da seção 9 já pede esses atributos.
+
+**Fluxo ideal de ponta a ponta:**
+
+```
+novo-cliente → cliente responde o briefing → modelo preenche o pagina.yaml
+→ lista de pendências → você aprova copy e imagens → build + QA → publicar
+```
+
+**Limite:** a aprovação da copy e as fotos reais continuam humanas. A automação reduz o trabalho, não elimina a revisão.
 
 **Resumo:** corrija contratos com o piloto, congele a v1 e use a rotina por IDs. Expanda só por demanda real.
 
