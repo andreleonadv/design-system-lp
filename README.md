@@ -158,7 +158,7 @@ design-system-lp/
     <nome>/
       briefing.md        # material do cliente
       pagina.yaml        # a planta da página
-      custom.css         # (opcional) pequenas sobrescritas
+      custom.css         # (opcional, planejado) pequenas sobrescritas
       assets/            # logo, fotos
       dist/              # GERADO: a página pronta
 ```
@@ -548,7 +548,7 @@ tema:
 
 1. Abra `clientes/<nome>/dist/index.html` no navegador e olhe no celular e no desktop.
 2. Peça ajustes de **copy e imagens** de forma específica.
-3. Ajustes visuais pequenos vão no `custom.css` do cliente (ver [seção 15](#15-quando-o-cliente-pede-algo-fora-do-catálogo)).
+3. Ajustes visuais pequenos vão no `custom.css` do cliente (ver [seção 15](#15-quando-o-cliente-pede-algo-fora-do-catálogo)). **Planejado:** o build ainda não carrega esse arquivo.
 4. Rode o QA de novo.
 
 ### 13.6 Fechar
@@ -655,6 +655,8 @@ novo-cliente → cliente responde o briefing → modelo preenche o pagina.yaml
 | Pedido repetido em 2 clientes | Promova para o sistema (variante ou opção) |
 
 `custom.css` **não cria componentes novos**: só ajusta o existente.
+
+**Estado atual:** o `build.mjs` ainda **não carrega** o `custom.css` do cliente. Para passar a usá-lo, peça ao modelo para incluir esse arquivo no build, anexando-o ao `style.css` depois dos CSS das seções, para que as sobrescritas valham. Até lá, um ajuste pequeno exige alterar o CSS da própria variante.
 
 **Resumo:** pequeno ajuste vai no `custom.css`; o que se repete entra no sistema.
 
