@@ -415,7 +415,7 @@ Leia o CLAUDE.md e o PROGRESSO.md. Rode npm install e npm test. Crie qa.mjs que,
 Sessão nova:
 
 ```text
-Leia o CLAUDE.md e o PROGRESSO.md. Rode npm install e npm test. Crie INDEX.md com 1 linha por variante existente (hoje só hero-a: o que é, quando usar, limites, se exige imagem). Crie lint.mjs (com testes em test/) que, para todas as variantes de secoes/, verifica: (1) todo {{campo}} do .html existe no schema.json da família; (2) o .css não tem cor hex nem rgb() direta (só tokens var(--...)); (3) cada .html começa com comentário de ID e descrição; (4) cada variante está listada no INDEX.md; (5) todas as variantes da família usam o mesmo schema.json (um por pasta). Rode sobre o repositório, corrija o que reprovar e atualize o PROGRESSO.md. Não crie seções novas.
+Leia o CLAUDE.md e o PROGRESSO.md. Rode npm install e npm test. Crie INDEX.md com 1 linha por variante existente (o que é, quando usar, limites, se exige imagem). Crie lint.mjs (com testes em test/) que, para todas as variantes de secoes/, verifica: (1) todo {{campo}} do .html existe no schema.json da família; (2) o .css não tem cor hex nem rgb() direta (só tokens var(--...)); (3) cada .html começa com comentário de ID e descrição; (4) cada variante está listada no INDEX.md; (5) todas as variantes da família usam o mesmo schema.json (um por pasta). Rode sobre o repositório, corrija o que reprovar e atualize o PROGRESSO.md. Não crie seções novas.
 ```
 
 **Pronto quando:** `node lint.mjs` passa e o `INDEX.md` lista o `hero-a`. A partir daqui, a verificação de cada variante é `node build.mjs` + `node qa.mjs` + `node lint.mjs`.
@@ -431,7 +431,7 @@ Leia o CLAUDE.md e o PROGRESSO.md. Rode npm install e npm test. Crie INDEX.md co
 Sessão nova:
 
 ```text
-Leia o CLAUDE.md e o PROGRESSO.md. Rode npm install e npm test. Parte 1: crie tokens/tipografia/tipo-1.css (fontes: [TÍTULO] e [TEXTO], do Google Fonts; escala de tamanhos, pesos e line-height; acentos do português) e tokens/paleta/paleta-1.css (tokens semânticos: --bg, --surface, --text, --muted, --accent, --on-accent, --border; cores: [...]). Verifique contraste AA. Parte 2: implemente no build.mjs um bloco opcional "tema" no pagina.yaml ({tipografia: tipo-1, paleta: paleta-1, estilo: opcional}) que anexa o CSS correspondente ao style.css logo depois do base.css; id de tema inexistente faz o build falhar; sem bloco tema, o comportamento atual continua. Para fonte do Google Fonts, adicione o <link> no <head>. Escreva testes em test/ para o tema. Aplique tipo-1 e paleta-1 em clientes/teste/pagina.yaml e rode build + qa + lint. Atualize PROGRESSO.md e README (seção 13.4).
+Leia o CLAUDE.md e o PROGRESSO.md. Rode npm install e npm test. Parte 1: crie tokens/tipografia/tipo-1.css (fontes: [TÍTULO] e [TEXTO], do Google Fonts; escala de tamanhos, pesos e line-height; acentos do português) e tokens/paleta/paleta-1.css (tokens semânticos: --bg, --surface, --text, --muted, --accent, --on-accent, --border; cores: [...]). Verifique contraste AA. Parte 2: implemente no build.mjs um bloco opcional "tema" no pagina.yaml ({tipografia: tipo-1, paleta: paleta-1, estilo: opcional}) que anexa o CSS correspondente ao style.css logo depois do base.css; id de tema inexistente faz o build falhar; sem bloco tema, o comportamento atual continua. Para fonte do Google Fonts, adicione o <link> no <head>. Escreva testes em test/ para o tema. Aplique tipo-1 e paleta-1 em clientes/teste/pagina.yaml e rode build + qa + lint. Atualize o PROGRESSO.md.
 ```
 
 **Pronto quando:** `clientes/teste` builda com `tema: {tipografia: tipo-1, paleta: paleta-1}`, o QA passa e `npm test` cobre o tema.
@@ -454,12 +454,12 @@ Estas decisões são suas. O modelo propõe em texto, você aprova, e só então
 | **SEO básico** | O build gera só `title` e `description`. Incluir Open Graph, favicon e dados estruturados? | Mudança no build e no bloco `pagina` do schema da página |
 | **`nicho` e `tipo` no `pagina.yaml`** | O build lê `nichos/<nicho>/nicho.yaml` e valida ordem e seções obrigatórias | Páginas já criadas precisam ganhar os campos |
 | **Famílias compartilhadas** | `hero`, `atuacao`, `autoridade`, `faq` e `contato` ficam únicas ou alguma se divide | Reescrita de schema e variantes |
-| **CTA padrão e referências visuais** | Definir (hoje "a definir") | Retrabalho de copy e de refinamento |
+| **CTA padrão e referências visuais** | Definir | Retrabalho de copy e de refinamento |
 
 Sessão nova:
 
 ```text
-Leia o CLAUDE.md e o PROGRESSO.md. Passo 5, só decisões. Proponha em texto, com recomendação para cada item, e espere minha aprovação: (1) cabeçalho e rodapé: entram ou não, com quais campos; (2) SEO: o que o bloco "pagina" deve ter além de titulo, lang e descricao; (3) nicho e tipo no pagina.yaml e como o build valida a ordem pelo nicho.yaml; (4) se as 5 famílias compartilhadas ficam únicas. Depois de aprovado, implemente no build.mjs com testes, atualize clientes/teste/pagina.yaml, o CLAUDE.md, o README e o PROGRESSO.md.
+Leia o CLAUDE.md e o PROGRESSO.md. Passo 5, só decisões. Proponha em texto, com recomendação para cada item, e espere minha aprovação: (1) cabeçalho e rodapé: entram ou não, com quais campos; (2) SEO: o que o bloco "pagina" deve ter além de titulo, lang e descricao; (3) nicho e tipo no pagina.yaml e como o build valida a ordem pelo nicho.yaml; (4) se as 5 famílias compartilhadas ficam únicas. Depois de aprovado, implemente no build.mjs com testes, atualize clientes/teste/pagina.yaml e o PROGRESSO.md e, se alguma regra do CLAUDE.md ficar desatualizada pelas decisões aprovadas (ex.: nicho e tipo deixam de ser "planejados"), corrija só essa regra.
 ```
 
 **Pronto quando:** as decisões estão registradas no `PROGRESSO.md` (sem "a definir" nos itens acima), o build implementa o que foi aprovado e `npm test` passa.
@@ -709,7 +709,7 @@ Regras: leia só INDEX.md e os schema.json dos IDs escolhidos; não abra os arqu
 
 ### 15.4 O que o `pagina.yaml` contém
 
-Formato **atual**, o que o `build.mjs` lê hoje (exemplo real de `clientes/teste/pagina.yaml`):
+Formato do `pagina.yaml` que o `build.mjs` lê (exemplo baseado em `clientes/teste/pagina.yaml`):
 
 ```yaml
 pagina:
