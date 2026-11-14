@@ -52,6 +52,14 @@ qa.mjs e gerar-paleta.mjs.
 
 
 
+## Commits
+
+- Todo commit leva no corpo um parágrafo "Observacao:" explicando em linguagem
+simples o que entrou e por quê.
+- Antes de commitar, perguntar ao usuário se ele ou o Claude escreve a observação
+(salvo se ele já tiver dito ou enviado o texto).
+- Formato: `tipo: descrição`, linha em branco, `Observacao: ...`.
+
 ## Estado
 
 Ler `PROGRESSO.md` ao retomar.
