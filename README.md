@@ -1,178 +1,478 @@
-# Design System de Landing Pages por IDs de Seção
+# Design System de Landing Pages — Tutorial Completo
 
-Material base e didático. Explica **o porquê**, **a arquitetura** e **como construir** um sistema que gera landing pages de clientes a partir de IDs de seções (`hero-b`, `como-funciona-c`, `cards-a`…), com o menor gasto de tokens por página.
+Este documento é um **tutorial passo a passo**. Quem ler do início ao fim sabe exatamente o que fazer, em que ordem e quais comandos dar para:
 
-> Os números de economia citados aqui são **estimativas**, não medições. Meça com suas próprias páginas.
+1. montar o sistema (fundação, tokens, seções e variantes);
+2. personalizar cada seção com referências (efeitos, microanimações, tipografia, cores);
+3. criar a landing page de um cliente usando só IDs.
+
+> **Para o modelo (Claude):** não leia este arquivo por padrão. Ele é longo e serve ao humano. As regras de trabalho estão no `CLAUDE.md`; o estado está no `PROGRESSO.md`.
+>
+> Os números de economia de tokens citados aqui são **estimativas**, não medições. Nomes de scripts e a forma exata de chamá-los (por exemplo `node build.mjs clientes/teste`) são **sugestões**: confirme na Fase 0 o que o `build.mjs` realmente aceita e ajuste este tutorial.
 
 ---
 
 ## Sumário
 
-1. [Objetivo e a pergunta inicial](#1-objetivo-e-a-pergunta-inicial)
-2. [Onde a economia é real (e onde não é)](#2-onde-a-economia-é-real-e-onde-não-é)
-3. [Arquitetura: três camadas](#3-arquitetura-três-camadas)
-4. [Formato técnico e estrutura de pastas](#4-formato-técnico-e-estrutura-de-pastas)
-5. [Tokens: a camada de variedade barata](#5-tokens-a-camada-de-variedade-barata)
-6. [Seções e contratos](#6-seções-e-contratos)
-7. [A especificação da página (`pagina.yaml`)](#7-a-especificação-da-página-paginayaml)
-8. [Instruções para o modelo](#8-instruções-para-o-modelo)
-9. [QA automático](#9-qa-automático)
-10. [Como gastar tokens com eficiência na criação](#10-como-gastar-tokens-com-eficiência-na-criação)
-11. [Roadmap por fases](#11-roadmap-por-fases)
-12. [Como iniciar (passo a passo)](#12-como-iniciar-passo-a-passo)
-13. [Limites e armadilhas](#13-limites-e-armadilhas)
-14. [Glossário](#14-glossário)
+0. [Onde estou? (checklist de progresso)](#0-onde-estou-checklist-de-progresso)
+1. [A ideia em 5 minutos](#1-a-ideia-em-5-minutos)
+2. [Conceitos que você precisa conhecer](#2-conceitos-que-você-precisa-conhecer)
+3. [Estrutura de pastas](#3-estrutura-de-pastas)
+4. [Mapa do caminho (visão geral)](#4-mapa-do-caminho-visão-geral)
+5. [Passo 0 — Preparar o ambiente](#5-passo-0--preparar-o-ambiente)
+6. [Passo 1 — Fase 0: fundação](#6-passo-1--fase-0-fundação)
+7. [Passo 2 — QA automático](#7-passo-2--qa-automático)
+8. [Passo 3 — Tokens provisórios](#8-passo-3--tokens-provisórios)
+9. [Passo 4 — Criar uma seção (roteiro de 4 comandos)](#9-passo-4--criar-uma-seção-roteiro-de-4-comandos)
+10. [Como personalizar com referências](#10-como-personalizar-com-referências)
+11. [Passo 5 — Tipografias e paletas finais](#11-passo-5--tipografias-e-paletas-finais)
+12. [Passo 6 — Catálogo](#12-passo-6--catálogo)
+13. [Passo 7 — Criar a página de um cliente](#13-passo-7--criar-a-página-de-um-cliente)
+14. [Passo 8 — Congelar a v1 e entrar na rotina](#14-passo-8--congelar-a-v1-e-entrar-na-rotina)
+15. [Quando o cliente pede algo fora do catálogo](#15-quando-o-cliente-pede-algo-fora-do-catálogo)
+16. [Sessões, tokens e git](#16-sessões-tokens-e-git)
+17. [Comandos de referência](#17-comandos-de-referência)
+18. [Problemas comuns](#18-problemas-comuns)
+19. [Limites do sistema](#19-limites-do-sistema)
+20. [Glossário](#20-glossário)
 
 ---
 
-## 1. Objetivo e a pergunta inicial
+## 0. Onde estou? (checklist de progresso)
 
-Criar landing pages para clientes de nichos diferentes, o mais rápido possível e gastando poucos tokens por página. A ideia: montar uma biblioteca com várias opções por seção (3 heros, 5 "como funciona", 5 cards, 5 tipografias, 5 paletas…) e, a cada cliente, apenas escolher IDs e preencher o conteúdo.
+Marque conforme avançar. Cada item é explicado nos passos abaixo.
 
-**Pergunta inicial:** isso torna a criação mais rápida e barata?
-
-**Resposta sincera:** sim, mas a economia vem de **eliminar decisões e retrabalho**, não de ter muitas opções. A quantidade de opções, sozinha, pode atrapalhar.
-
-**Resumo:** vale a pena se o sistema for bem desenhado. O ganho está em reaproveitar peças testadas e reduzir correções.
-
----
-
-## 2. Onde a economia é real (e onde não é)
-
-### Economia real
-1. **Menos decisões de design por página.** Sem biblioteca o modelo reinventa layout, espaçamento e hierarquia a cada vez.
-2. **Menos ciclos de correção.** Um componente já testado em mobile, com contraste e acessibilidade resolvidos, não gera bug.
-3. **Consistência.** Menos cara de "feito por IA".
-4. **Previsibilidade.** Você sabe o que vai sair antes de rodar.
-
-A primeira geração de uma seção custa poucos milhares de tokens. O grande custo está em **iterar e verificar** (prints, correções), e é isso que o sistema reduz.
-
-### Onde pode dar errado
-- **Mais opções não é melhor.** 3×5×5×5×5 combinações = milhares, e você não testa todas. Variante nunca usada é promessa não verificada.
-- **Carregar o sistema inteiro no contexto custa caro.** Só economiza se o modelo ler um índice pequeno e abrir apenas o necessário.
-- **Paleta fixa quase não serve.** Cada cliente tem marca própria. O que vale é um gerador de paleta a partir da cor da marca.
-- **Variantes sem contrato comum quebram a troca.** Se hero A e B esperam dados diferentes, trocar exige reescrita.
-- **Risco de sameness.** Páginas saindo do mesmo kit ficam parecidas, o que pesa em advocacia e saúde, onde a identidade é o argumento.
-
-### Ordem de grandeza (estimativa)
-Página gerada do zero com iterações: pode passar de 50 mil tokens. Com sistema: spec + copy em 3 a 8 mil, mais revisão. O sistema tende a se pagar entre a 5ª e a 10ª página. Se forem só 2 ou 3 páginas, não compensa.
-
-**Resumo:** a economia vem de reuso testado, contratos e QA automático. Muitas variantes sem uso real viram peso morto.
+- [ ] Passo 0: ambiente pronto (Node, git, pasta, `CLAUDE.md`, `PROGRESSO.md`, commit inicial)
+- [ ] Passo 1: Fase 0 (build, tokens base, `hero-a`, página de teste)
+- [ ] Passo 2: `qa.mjs` funcionando
+- [ ] Passo 3: 1 tipografia e 1 paleta provisórias
+- [ ] Passo 4: seções criadas (marque cada uma)
+  - [ ] cabeçalho
+  - [ ] hero
+  - [ ] como funciona
+  - [ ] cards
+  - [ ] prova social
+  - [ ] FAQ
+  - [ ] CTA final
+  - [ ] rodapé
+- [ ] Passo 5: 5 tipografias e 5 paletas finais
+- [ ] Passo 6: catálogo gerado
+- [ ] Passo 7: piloto com cliente real
+- [ ] Passo 8: v1 congelada (`git tag v1`)
 
 ---
 
-## 3. Arquitetura: três camadas
+## 1. A ideia em 5 minutos
 
-| Camada | O que é | Exemplo |
+**Problema:** criar muitas landing pages de clientes por dia sem gastar uma montanha de tokens, mantendo qualidade e consistência.
+
+**Solução:** uma biblioteca de peças prontas (seções com várias variantes, tipografias, paletas). Para cada cliente você apenas **escolhe os IDs** (`hero-b`, `como-funciona-c`, `cards-a`…) e **preenche o conteúdo**. Um script monta a página.
+
+**Analogia:** as seções são peças de Lego. A página é a montagem. O arquivo `pagina.yaml` é a planta que diz quais peças usar e em que ordem.
+
+**Onde a economia é real:**
+- menos decisões de design por página (você já decidiu quando criou a biblioteca);
+- menos ciclos de correção (peças já testadas em celular, contraste e acessibilidade);
+- QA automático por script, sem gastar tokens do modelo;
+- consistência entre páginas.
+
+**Onde não é:**
+- fotos e textos do cliente continuam dando trabalho;
+- variantes que nunca são usadas viram peso morto;
+- o investimento inicial é alto (várias sessões), e só compensa se você fizer muitas páginas. Estimativa: se paga entre a 5ª e a 10ª página.
+
+**Resumo:** você investe agora numa biblioteca de peças; depois cada página é só escolher IDs e preencher texto.
+
+---
+
+## 2. Conceitos que você precisa conhecer
+
+| Conceito | O que é | Exemplo |
 |---|---|---|
-| **1. Tokens** | Cores, tipografia, raio, sombra, espaçamento, como variáveis CSS | `--accent`, `tipo-3`, `estilo-sobrio` |
-| **2. Seções** | Hero, como funciona, cards etc., cada uma com várias variantes e **um contrato de dados comum** | `hero-a`, `hero-b`, `hero-c` |
-| **3. Composição** | Um arquivo por cliente dizendo quais IDs usar e trazendo o conteúdo | `pagina.yaml` |
+| **Token** | Uma decisão visual guardada em variável CSS | `--accent` (cor de destaque) |
+| **Token semântico** | Nomeado pela função, não pela aparência | `--accent`, não `--azul` |
+| **Seção** | Um bloco da página | hero, como funciona, cards |
+| **Variante** | Uma versão estrutural de uma seção | `hero-a`, `hero-b`, `hero-c` |
+| **ID** | Nome único de uma variante, também usado como nome de arquivo | `hero-b` |
+| **Schema** (contrato) | Lista dos campos que uma seção aceita; igual para todas as variantes | `titulo`, `subtitulo`, `cta` |
+| **`pagina.yaml`** | A planta da página de um cliente: tema, IDs e conteúdo | ver Passo 7 |
+| **Build** | Script que monta o HTML final | `node build.mjs ...` |
+| **QA** | Script que verifica a página automaticamente | `node qa.mjs ...` |
+| **Catálogo** | Página gerada que mostra todas as variantes lado a lado | para **você** escolher |
+| **`INDEX.md`** | Lista em texto, uma linha por variante | para o **modelo** escolher |
+| **Sessão** | Uma conversa com o modelo | uma etapa por sessão |
+| **`PROGRESSO.md`** | Ponte entre sessões: feito, decisões, próximo | lido no início de cada sessão |
 
-### O papel do "mostruário"
-A página com várias opções por seção é o **catálogo**. Ele deve ser **gerado** a partir dos mesmos arquivos das seções, nunca desenhado à mão (senão diverge do sistema).
+### As três camadas
 
-- O catálogo serve a **você**: escolher visualmente.
-- O `INDEX.md` serve ao **modelo**: escolher por texto.
-- Você passa só os IDs escolhidos ao modelo. Isso evita gastar tokens com imagens.
+1. **Tokens:** cores, tipografia, raio, sombra, espaçamento.
+2. **Seções:** hero, como funciona, cards etc., cada uma com várias variantes e um schema comum.
+3. **Composição:** o `pagina.yaml` de cada cliente.
 
-### Construir já modular
-Não faça uma página monolítica com todas as variações para extrair depois: isso custa duas vezes (gera e depois refatora). Cada seção nasce como arquivo próprio.
+### Regra de ouro dos contratos
 
-**Resumo:** tokens + seções + composição. O catálogo é gerado e é para você. O modelo trabalha por IDs e texto.
+**Todas as variantes de uma seção aceitam exatamente os mesmos dados.** Assim, trocar `cf-a` por `cf-d` é mudar um ID, sem reescrever conteúdo. Se uma variante precisar de campo extra, ele deve ser **opcional**.
+
+### Por que um arquivo por variante
+
+Cada variante tem seus próprios arquivos (`hero-a.html`, `hero-a.css`). Motivos: o modelo abre só o que precisa (economia), o build liga ID a arquivo sem procurar, e editar uma variante não arrisca as outras.
+
+**Resumo:** tokens (aparência), seções (estrutura), `pagina.yaml` (composição). Mesmo schema em todas as variantes. Um arquivo por variante.
 
 ---
 
-## 4. Formato técnico e estrutura de pastas
-
-**HTML/CSS estático + script de build em Node.** Sem React, Next ou outro framework.
-
-Motivos:
-- A página sai pronta em poucos arquivos, publicável em qualquer hospedagem.
-- Nenhuma dependência para quebrar.
-- Menos código = menos tokens, na criação e em cada correção.
-- O `dist/` de cada cliente é independente do sistema: mudar o sistema depois **não quebra** páginas entregues.
+## 3. Estrutura de pastas
 
 ```
 design-system-lp/
-  CLAUDE.md              # regras curtas (< 100 linhas), relidas todo turno
+  CLAUDE.md              # regras curtas (< 100 linhas), lidas pelo modelo a cada turno
   PROGRESSO.md           # ponte entre sessões
-  README.md              # este documento
+  README.md              # este tutorial (para humanos)
   INDEX.md               # 1 linha por variante: o que é, quando usar, limites
+  .gitignore             # inclui graphify-out/
   tokens/
     base.css             # reset, escala, grid
-    tipografia/tipo-1..5.css
-    estilo/sobrio.css, suave.css, ...   # raio, sombra, densidade
-    gerar-paleta.mjs     # 1-2 cores da marca -> tokens completos
+    tipografia/tipo-1.css ... tipo-5.css
+    paleta/paleta-1.css ... paleta-5.css   # presets (clientes sem marca)
+    estilo/sobrio.css, suave.css, ...      # raio, sombra, densidade
+    gerar-paleta.mjs     # 1-2 cores da marca -> tokens completos, com checagem de contraste
   secoes/
     hero/
-      schema.json        # contrato de dados, igual para todas as variantes
-      hero-a.html  hero-a.css
+      schema.json        # contrato da seção (1 por seção)
+      hero-a.html  hero-a.css  [hero-a.js opcional]
       hero-b.html  hero-b.css
+      hero-c.html  hero-c.css
     como-funciona/ ...
+    cards/ ...
   build.mjs              # lê pagina.yaml e gera o HTML final
   qa.mjs                 # verificações automáticas
-  catalogo/              # gerado: mostruário de todas as variantes
-  clientes/<nome>/pagina.yaml, assets/, dist/
+  catalogo/              # GERADO: mostruário de todas as variantes
+  clientes/
+    <nome>/
+      briefing.md        # material do cliente
+      pagina.yaml        # a planta da página
+      custom.css         # (opcional) pequenas sobrescritas
+      assets/            # logo, fotos
+      dist/              # GERADO: a página pronta
 ```
 
-Cada variante é um parcial HTML com campos (`{{titulo}}`, `{{cta.texto}}`) mais um CSS que só usa variáveis de token. O `build.mjs` junta tudo.
+Cada arquivo `.html` de variante deve ter, no topo, um comentário com o ID e uma linha de descrição.
 
-**Resumo:** HTML/CSS estático, parciais com campos, build em Node, uma pasta `dist` por cliente.
+**Resumo:** tokens, seções, clientes, mais os scripts `build.mjs` e `qa.mjs`. `catalogo/` e `dist/` são gerados, não escritos à mão.
 
 ---
 
-## 5. Tokens: a camada de variedade barata
+## 4. Mapa do caminho (visão geral)
 
-Use **tokens semânticos**, não nomes de cor: `--bg`, `--surface`, `--text`, `--muted`, `--accent`, `--on-accent`, `--border`. Componentes **nunca** usam hex direto. Assim trocar a marca é trocar um arquivo pequeno.
+```
+Passo 0  Ambiente
+Passo 1  Fase 0: fundação (build + hero-a + página de teste)
+Passo 2  QA automático
+Passo 3  Tokens provisórios (1 tipografia, 1 paleta)
+Passo 4  Para CADA seção:  definir → base → refinar com referências → derivar variantes
+Passo 5  Tipografias e paletas finais (5 de cada)
+Passo 6  Catálogo
+Passo 7  Piloto: página de um cliente real
+Passo 8  Congelar v1 → rotina diária
+```
 
-### Paleta
-Em vez de 5 presets, um `gerar-paleta.mjs` que:
-- recebe 1 ou 2 cores da marca;
-- deriva a escala em OKLCH, em tema claro e escuro;
-- **testa contraste** (WCAG AA) e ajusta ou avisa.
+Regra de ouro do processo: **uma etapa por sessão**, sempre terminando com `PROGRESSO.md` atualizado e commit.
 
-Mantenha 2 ou 3 presets só para clientes sem marca definida.
+**Resumo:** fundação, QA, tokens provisórios, loop de seções, tokens finais, catálogo, piloto, v1.
+
+---
+
+## 5. Passo 0 — Preparar o ambiente
+
+**Objetivo:** ter pasta, git e os dois arquivos de instrução.
+
+1. Conferir ferramentas (Node 18 ou superior, git, Chrome ou Edge):
+
+   ```bash
+   node -v
+   ```
+
+   ```bash
+   git --version
+   ```
+
+2. Criar a pasta e o repositório:
+
+   ```bash
+   mkdir "D:\CLAUDE PROJECTS\design-system-lp"
+   ```
+
+   ```bash
+   cd "D:\CLAUDE PROJECTS\design-system-lp"
+   ```
+
+   ```bash
+   git init
+   ```
+
+3. Decidir três coisas (anote no `PROGRESSO.md`):
+   - **nicho inicial** (sugestão: um só, por exemplo advocacia);
+   - **CTA padrão** (por exemplo WhatsApp com mensagem pré-preenchida);
+   - **2 ou 3 referências visuais** de páginas que você admira.
+
+4. Criar o `CLAUDE.md` (curto, menos de 100 linhas) e o `PROGRESSO.md`. O modelo de ambos está nos arquivos deste repositório.
+
+5. Primeiro commit. No PowerShell do Windows (5.1) o `&&` **não funciona**; rode os comandos separados:
+
+   ```bash
+   git add .
+   ```
+
+   ```bash
+   git commit -m "chore: base do design system"
+   ```
+
+   Se der `Author identity unknown`, configure uma vez:
+
+   ```bash
+   git config --global user.name "Seu Nome"
+   ```
+
+   ```bash
+   git config --global user.email "seu@email.com"
+   ```
+
+**Pronto quando:** `git log` mostra o commit inicial.
+
+**Resumo:** Node, git, pasta, `CLAUDE.md`, `PROGRESSO.md`, decisões de nicho/CTA/referências e o primeiro commit.
+
+---
+
+## 6. Passo 1 — Fase 0: fundação
+
+**Objetivo:** ter o motor funcionando com **uma** seção, antes de criar qualquer variante.
+
+Abra uma **sessão nova dentro da pasta** `design-system-lp` (é assim que o `CLAUDE.md` carrega) e cole:
+
+```text
+Leia o CLAUDE.md e o PROGRESSO.md. Fase 0, só isto: crie a estrutura de pastas, tokens/base.css (escala de espaçamento, tipografia e uma paleta de teste com os tokens semânticos), build.mjs (lê clientes/<nome>/pagina.yaml, valida contra o schema.json, monta o HTML em dist/ e falha com campos vazios), a seção hero-a com schema, e clientes/teste/pagina.yaml. Não crie outras variantes nem o QA ainda. Ao final rode o build e me diga o que passou ou falhou. Atualize o PROGRESSO.md.
+```
+
+**Revise antes de seguir:** o `schema.json` do hero. Ele serve de molde para todas as outras seções.
+
+**Se o modelo propuser** framework, TypeScript ou algo "mais robusto": recuse. A simplicidade é o que economiza tokens.
+
+**Pronto quando:** o build gera `clientes/teste/dist/index.html` e ele abre no navegador.
+
+**Feche a sessão:** `PROGRESSO.md` atualizado e commit (`feat: fase 0 fundação`).
+
+**Resumo:** uma sessão, um prompt, e o resultado é um build funcionando com `hero-a`. Revise o schema do hero e não aceite frameworks.
+
+---
+
+## 7. Passo 2 — QA automático
+
+**Objetivo:** um script que verifica a página sem gastar tokens do modelo.
+
+Sessão nova:
+
+```text
+Leia o CLAUDE.md e o PROGRESSO.md. Crie qa.mjs que, para um cliente, verifica: placeholders {{...}} sobrando e campos obrigatórios vazios; contraste de texto sobre fundo; overflow horizontal em 375, 768 e 1280 px; imagens sem alt; links vazios ou "#"; ordem dos títulos (h1, h2); peso da página. Gere screenshots por viewport em arquivo usando Chrome headless (não o painel do app). Rode sobre clientes/teste e reporte. Não crie variantes novas.
+```
+
+**Por que Chrome headless:** o painel oculto do app não renderiza frames, então prints saem em branco e efeitos que dependem de rolagem não disparam.
+
+**Pronto quando:** `qa.mjs` roda na página de teste e reporta resultados claros (passou ou o que falhou).
+
+**Resumo:** o QA por script substitui revisões visuais caras. Ele é o juiz de cada variante daqui para frente.
+
+---
+
+## 8. Passo 3 — Tokens provisórios
+
+**Objetivo:** enquanto cria as seções, ter pelo menos uma tipografia e uma paleta reais para testar.
+
+Sessão nova:
+
+```text
+Leia o CLAUDE.md e o PROGRESSO.md. Crie tokens/tipografia/tipo-1.css (fontes: [TÍTULO] e [TEXTO], do Google Fonts; escala de tamanhos, pesos e line-height) e tokens/paleta/paleta-1.css (tokens semânticos: --bg, --surface, --text, --muted, --accent, --on-accent, --border; cores: [...]). Verifique contraste AA. Aplique na página de teste e rode build + qa.
+```
+
+As 5 tipografias e 5 paletas finais ficam para o Passo 5, quando você já tiver seções para testá-las.
+
+**Resumo:** 1 tipografia e 1 paleta provisórias bastam para desenvolver as seções.
+
+---
+
+## 9. Passo 4 — Criar uma seção (roteiro de 4 comandos)
+
+Este é o **ciclo central**. Repita para cada seção, trocando `[SEÇÃO]`.
+
+**Ordem das seções:** cabeçalho, hero, como funciona, cards, prova social, FAQ, CTA final, rodapé.
+
+**Pré-requisito:** Passos 1 a 3 concluídos.
+
+### Comando 1 — Definir (nada de código ainda)
+
+```text
+Leia o CLAUDE.md e o PROGRESSO.md. Vamos criar a seção [SEÇÃO]. Ainda NÃO escreva código de variante. Entregue só:
+1) Os campos do schema.json da seção (obrigatórios, opcionais, limites de tamanho).
+2) Os eixos de variação: [N] variantes que difiram em ESTRUTURA, com uma linha cada (o que é e quando usar).
+3) Qual será a variante base (a).
+Espere minha aprovação.
+```
+
+Você revisa e aprova ou ajusta. É a sua decisão mais barata e mais importante: depois dela o contrato está fixo.
+
+### Comando 2 — Criar a base e validar
+
+```text
+Aprovado. Crie o schema.json e a variante [seção]-a (html + css) seguindo o CLAUDE.md. Só tokens, sem hex. Adicione uma seção no clientes/teste/pagina.yaml usando [seção]-a, rode o build e o qa, e me diga o que passou ou falhou. Não crie as outras variantes ainda.
+```
+
+**Pronto quando:** a página de teste builda com a seção e o QA passa em 375, 768 e 1280 px.
+
+### Comando 3 — Refinar com referências (você trabalha individualmente aqui)
+
+Use o modelo do [Passo 10](#10-como-personalizar-com-referências). Repita 2 a 3 rodadas, no máximo, até a base ficar do jeito que você quer.
+
+### Comando 4 — Derivar as outras variantes e fechar
+
+```text
+A base [seção]-a está aprovada. Crie as variantes [seção]-b até [seção]-[última] conforme os eixos aprovados, usando [seção]-a como referência de estrutura e o MESMO schema.json. Para cada uma: adicione ao INDEX.md (1 linha: o que é, quando usar, limites), troque o ID no clientes/teste/pagina.yaml, rode build + qa. Ao terminar: atualize o PROGRESSO.md e faça um commit "feat: seção [SEÇÃO] (N variantes)".
+```
+
+Cada variante derivada também pode passar pelo refinamento do Passo 10 (uma por sessão).
+
+### Checklist de fechamento de cada seção
+
+- [ ] `schema.json` único para a seção
+- [ ] cada variante com `.html` e `.css`, usando só tokens (nenhum hex)
+- [ ] todas passam em build e QA com os mesmos dados de teste
+- [ ] `INDEX.md` com uma linha por variante
+- [ ] `PROGRESSO.md` atualizado e commit feito
+
+### Regras que mantêm o padrão
+
+1. **Não pule o Comando 1.** Sem ele o modelo cria variantes que só diferem em cor.
+2. **Não mude o `schema.json`** com variantes já criadas sem avisar e incrementar a `versao`.
+3. **Variantes diferem em estrutura**, não em cor (cor é trabalho dos tokens).
+
+**Resumo:** para cada seção: definir (você aprova), criar a base, refinar com referências, derivar as outras, fechar com checklist e commit.
+
+---
+
+## 10. Como personalizar com referências
+
+Aqui você deixa cada variante do seu jeito, usando outras páginas como inspiração para **efeitos e microanimações**.
+
+### Modelo de prompt
+
+```text
+Na variante [id], quero aproveitar [o que]: [descreva o efeito] (referência: [link ou print em clientes/.../refs/]).
+Reproduza a TÉCNICA em CSS usando só os tokens. Não copie textos, imagens, logos nem código do site. Duração e curva via --dur e --ease. Respeite prefers-reduced-motion. O conteúdo deve ficar visível mesmo sem a animação. Rode build + qa e mostre o screenshot de 375 e 1280 px.
+```
+
+### Regras
+
+- **Copie a técnica, não o conteúdo.** Efeitos são ideias; textos, imagens, logos e código proprietário de terceiros não podem ser copiados.
+- **A animação só enfeita.** Sem ela, a página precisa funcionar e ficar legível. Isso também mantém o QA confiável.
+- **Seja leve:** anime só `transform` e `opacity`, entre 150 e 400 ms, e respeite `prefers-reduced-motion`.
+- **JavaScript só se precisar,** num arquivo opcional da variante (`hero-b.js`). Nada de bibliotecas pesadas.
+- **Campo novo = campo opcional.** Se o efeito exigir dado novo (ex.: vídeo de fundo) e o `schema.json` mudar, revise todas as variantes da seção e incremente a `versao`.
+
+### Como gastar pouco
+
+- Uma variante por sessão.
+- Feedback **específico** vale mais que "melhore": *"título grande demais no mobile; aumente o espaço do botão"*.
+- Limite de 2 a 3 rodadas por variante, e uma definição de pronto: build e QA passam e você aprovou no catálogo.
+- Capriche mais nas seções que aparecem em toda página (hero, cards, CTA) e aceite acabamento mais simples nas outras.
+
+**Resumo:** referência é fonte de técnica, nunca de conteúdo. Peça o efeito com o prompt acima, mantenha leve e acessível, e limite as rodadas.
+
+---
+
+## 11. Passo 5 — Tipografias e paletas finais
+
+**Objetivo:** fechar 5 tipografias, 5 paletas (presets) e 2 ou 3 pacotes de estilo, testados em seções reais.
 
 ### Tipografia
-4 a 5 pares são viáveis e baratos (poucas linhas de CSS cada). Defina escala, pesos, `line-height`, `letter-spacing`; `font-display: swap`.
+
+1. Descubra as fontes de sites que você admira: botão direito no texto, **Inspecionar**, aba de estilos, `font-family` (ou uma extensão como WhatFont).
+2. Para cada par, anote: fonte dos títulos, fonte do texto e o site de origem.
+3. Prompt:
+
+   ```text
+   Crie tokens/tipografia/tipo-[N].css com títulos em [FONTE A] e texto em [FONTE B] (Google Fonts). Defina escala de tamanhos, pesos, line-height e letter-spacing. Máximo 2 famílias e 3 pesos. Confirme que acentos do português ficam bons. Inspirado em [site].
+   ```
+
+**Cuidados:** licença (Google Fonts é livre; fontes pagas exigem licença), peso na página e acentos.
+
+### Paleta
+
+1. Capture as cores da referência (conta-gotas do navegador ou print).
+2. Prompt:
+
+   ```text
+   Crie tokens/paleta/paleta-[N].css a partir destas cores: [lista com o papel de cada uma: fundo, texto, destaque...]. Mapeie para os tokens semânticos, gere tema claro e escuro e verifique contraste AA. Se alguma combinação reprovar, ajuste e me diga o que mudou.
+   ```
+
+3. **Clientes com marca** não usam preset: o `gerar-paleta.mjs` parte de 1 ou 2 cores do cliente e deriva a escala com checagem de contraste.
 
 ### Estilo
-2 a 3 pacotes (ex.: sóbrio, suave, editorial) que definem raio, sombra, densidade e espessura de borda. Muda a "personalidade" sem criar componente novo.
 
-**Resumo:** tokens semânticos; paleta gerada com checagem de contraste; 5 pares tipográficos; 3 pacotes de estilo. Muita variedade vem daqui, de graça.
+2 ou 3 pacotes (ex.: sóbrio, suave, editorial) que definem raio, sombra, densidade e borda. Mudam a "personalidade" sem criar componentes.
 
----
+**Atenção:** inspirar-se em uma paleta é normal; copiar a identidade completa de uma marca conhecida, não.
 
-## 6. Seções e contratos
-
-**Regra central:** todas as variantes de uma seção aceitam **exatamente os mesmos dados**.
-
-Exemplo para `como-funciona`:
-- `titulo`
-- `intro` (opcional)
-- `passos[]` com `titulo`, `texto`, `icone` (opcional)
-
-Trocar `cf-a` por `cf-d` é mudar um ID, sem reescrever conteúdo.
-
-### Regras para as variantes valerem a pena
-- **Diferir em estrutura**, não só em cor (cor é trabalho dos tokens).
-- Definir **eixos de variação** por seção. Exemplos:
-  - Hero: texto à esquerda com imagem à direita; centralizado; tela dividida.
-  - Como funciona: linha do tempo vertical; cards numerados; passos horizontais; acordeão; grade de ícones.
-- Cada variante tem uma linha no `INDEX.md` com **quando usar** (ex.: "bom com 3 a 4 passos, ruim com texto longo").
-- Declarar **limites** (máx. 6 passos, título até 60 caracteres). O QA verifica.
-
-### Quantidades sugeridas
-Hero 3, como funciona 3 a 5, cards 3 a 5, mais prova social, FAQ, CTA final, rodapé. Construa em **ondas**: primeiro **uma** variante base por seção (fixa o contrato), depois derive as outras. Se o contrato mudar no meio, você refaz tudo.
-
-**Resumo:** mesmo contrato em todas as variantes, variação estrutural real, "quando usar" documentado, limites declarados, e primeiro 1 variante por seção.
+**Resumo:** descubra fontes e cores pelo navegador, peça os arquivos com os prompts acima, confira licença e contraste, e compare no catálogo.
 
 ---
 
-## 7. A especificação da página (`pagina.yaml`)
+## 12. Passo 6 — Catálogo
 
-É aqui que a economia acontece. O modelo escreve só este arquivo; o build faz o resto.
+**Objetivo:** uma página gerada que mostra todas as variantes, tipografias e paletas lado a lado, com os mesmos dados de teste. É a **sua** ferramenta para escolher.
+
+Sessão nova:
+
+```text
+Leia o CLAUDE.md e o PROGRESSO.md. Crie um script (catalogo.mjs) que gera catalogo/index.html a partir de secoes/, tokens/tipografia e tokens/paleta: mostra cada variante com os dados de teste, com seletor de tipografia e de paleta. Deve ser gerado, nunca escrito à mão. Gere também uma imagem única (screenshot) do catálogo via Chrome headless.
+```
+
+O nome `catalogo.mjs` é uma sugestão; use o que o modelo criar e anote no `PROGRESSO.md`.
+
+**Resumo:** o catálogo é gerado dos mesmos arquivos do sistema e serve para você olhar e escolher.
+
+---
+
+## 13. Passo 7 — Criar a página de um cliente
+
+Este é o fluxo completo. O **piloto** é a primeira vez; depois vira rotina.
+
+### 13.1 Briefing
+
+Crie `clientes/<nome>/briefing.md` e a pasta `assets/` com:
+- nome, serviços e diferenciais;
+- contatos e CTA;
+- logo, fotos e cores da marca (se houver);
+- textos já aprovados;
+- regras do nicho (ex.: advocacia e saúde têm limites de publicidade; **não invente número, depoimento ou promessa**).
+
+### 13.2 Escolher no catálogo
+
+Abra o catálogo e anote:
+- IDs das seções, na ordem;
+- tipografia (`tipo-N`) e estilo;
+- paleta: preset ou gerada a partir das cores da marca.
+
+### 13.3 Pedir a página ao modelo
+
+Sessão nova:
+
+```text
+Crie a landing do cliente [NOME] (nicho [X]).
+IDs: cabecalho-a, hero-b, como-funciona-c, cards-a, prova-social-a, faq-a, cta-a, rodape-a
+Tipografia: tipo-3 | Estilo: sobrio | Paleta: gerar a partir de #[COR1] e #[COR2]
+Material em clientes/[nome]/briefing.md e assets/.
+Regras: leia só INDEX.md e os schema.json dos IDs escolhidos; não abra os arquivos das variantes. Não invente dado do cliente: se faltar um campo obrigatório, liste o que falta e pergunte. Escreva o pagina.yaml, rode build e qa, corrija o que o QA apontar e me diga o resultado.
+```
+
+### 13.4 O que o `pagina.yaml` contém
 
 ```yaml
 cliente: exemplo-advocacia
@@ -183,176 +483,222 @@ tema:
   tipografia: tipo-3
   estilo: sobrio
 secoes:
+  - cabecalho: cabecalho-a
+    logo: assets/logo.svg
   - hero: hero-b
     titulo: "..."
-    cta: { texto: "Falar no WhatsApp", link: "..." }
+    subtitulo: "..."
+    cta: { texto: "Falar no WhatsApp", link: "https://wa.me/..." }
   - como-funciona: cf-c
-    passos: [ ... ]
+    passos:
+      - { titulo: "...", texto: "..." }
   - cards: cards-a
     itens: [ ... ]
   - faq: faq-a
-  - contato: contato-a
+  - rodape: rodape-a
 ```
 
-### Regras importantes
-- **Campo em branco nunca vira texto padrão.** O build **falha** se sobrar `{{campo}}` ou campo obrigatório vazio. Isso protege contra inventar dado do cliente.
-- **Esquemas de conteúdo por nicho** (advocacia, saúde etc.): seções obrigatórias, avisos regulatórios, perguntas de briefing. Para esse público, isso economiza tanto quanto as variantes visuais.
-- Registre a `versao` do schema para mudanças incompatíveis.
+**Regra de segurança:** campo obrigatório vazio ou `{{placeholder}}` sobrando **faz o build falhar**. O sistema nunca preenche dado do cliente com valor inventado.
 
-### O prompt do dia a dia (depois que o sistema existir)
-> Crie a landing do cliente X com hero-b, como-funciona-c, cards-a, tipo-3, estilo-sobrio e paleta a partir de #1f3a5f.
+### 13.5 Revisar e ajustar
 
-O modelo lê o `INDEX.md` e os `schema.json` dos IDs, escreve o `pagina.yaml` com a copy e roda o build. Se o ID não existir no índice, o build falha em vez de improvisar.
+1. Abra `clientes/<nome>/dist/index.html` no navegador e olhe no celular e no desktop.
+2. Peça ajustes de **copy e imagens** de forma específica.
+3. Ajustes visuais pequenos vão no `custom.css` do cliente (ver [seção 15](#15-quando-o-cliente-pede-algo-fora-do-catálogo)).
+4. Rode o QA de novo.
 
-**Resumo:** a página é um YAML (IDs + tokens + copy). O build monta o HTML e falha se faltar dado. Esquemas por nicho valem muito.
+### 13.6 Fechar
 
----
+`PROGRESSO.md` (só se aprendeu algo para o sistema) e commit da pasta do cliente:
 
-## 8. Instruções para o modelo
+```bash
+git add clientes/<nome>
+```
 
-- **`CLAUDE.md` com menos de 100 linhas.** Ele é relido em todo turno; cada linha custa o tempo todo.
-- **`INDEX.md`** com uma linha por variante e os campos do schema. É o único catálogo que o modelo lê.
-- **Um comando ou skill `/nova-pagina`** que conduz o fluxo: briefing, spec, build, QA, correção.
-- **Regra explícita:** o modelo não abre os arquivos das variantes sem necessidade (só para criar ou corrigir uma).
+```bash
+git commit -m "feat: landing <nome>"
+```
 
-### Atenção às regras globais
-Regras globais do usuário (`~/.claude/rules`) podem exigir TDD com 80% de cobertura e agentes de revisão a cada mudança. Num sistema de HTML/CSS isso gasta tokens sem proteger nada. O `CLAUDE.md` do projeto deve declarar que **a verificação aqui é `build.mjs` + `qa.mjs`**, e que testes automatizados cobrem apenas `build.mjs`, `qa.mjs` e `gerar-paleta.mjs`.
+**No piloto,** anote o que faltou no sistema (campo, variante, limite). Isso alimenta o Passo 8.
 
-**Resumo:** contexto fixo mínimo, índice curto, comando que guia o fluxo, e a regra de não ler componentes sem necessidade.
-
----
-
-## 9. QA automático
-
-Um `qa.mjs` que roda após cada build, sem gastar tokens do modelo:
-
-- Placeholders não substituídos e campos obrigatórios vazios.
-- Contraste de texto sobre fundo.
-- Overflow horizontal em 375, 768 e 1280 px.
-- Imagens sem `alt`, links vazios ou `#`, ordem de títulos (h1, h2).
-- Peso total da página e imagens sem dimensão.
-- Screenshots por viewport salvos em arquivo (o modelo só olha o que o script apontou).
-
-Use **Chrome headless** para os screenshots, não o painel oculto do app (painel oculto não renderiza frames e gera print em branco).
-
-**Resumo:** script que falha cedo e barato; o modelo só vê imagem quando há problema.
+**Resumo:** briefing, escolha de IDs no catálogo, prompt de criação, `pagina.yaml` com a copy, build e QA, revisão sua, commit. Nunca invente dado do cliente.
 
 ---
 
-## 10. Como gastar tokens com eficiência na criação
+## 14. Passo 8 — Congelar a v1 e entrar na rotina
 
-1. **Fundação primeiro, com o modelo mais capaz:** pastas, schema de uma seção, `build.mjs`, `gerar-paleta.mjs`, `qa.mjs`. Erro de arquitetura aqui custa muito depois.
-2. **Uma etapa por sessão.** A cada mensagem o modelo relê **toda** a conversa; sessões longas ficam caras e confusas.
-3. **`PROGRESSO.md` como ponte.** Ao fim de cada etapa registre: feito, decisões, próximo. A sessão seguinte começa leve lendo `CLAUDE.md` + `PROGRESSO.md`.
-4. **Derive variantes com modelo mais barato**, depois que o contrato existe ("crie `hero-c` com este schema, seguindo `hero-a`").
-5. **Verificação visual consolidada:** o script gera uma única imagem do catálogo com todas as variantes.
-6. **Direção antes do código:** defina em texto os eixos de variação de cada seção. Barato, evita variantes quase iguais.
-7. **Git por etapa:** um commit por etapa permite reverter uma variante ruim.
-8. **Piloto real cedo:** 1 ou 2 páginas reais revelam o que falta no contrato antes de construir todas as variantes.
+1. Corrija contratos e `INDEX.md` com o que o piloto mostrou (versione o schema se mudar).
+2. Faça 1 ou 2 pilotos antes de ampliar variantes.
+3. Congele:
 
-### Exemplo de ritmo de sessões
+   ```bash
+   git tag v1
+   ```
 
-| Sessão | Etapa | Ao terminar |
+4. **Rotina diária por página:**
+
+   | Etapa | Quem | Tempo/Token |
+   |---|---|---|
+   | Briefing | Você | — |
+   | Escolher IDs no catálogo | Você | — |
+   | Prompt de criação + `pagina.yaml` | Modelo | baixo |
+   | Build + QA + correções | Modelo/script | baixo |
+   | Revisão e ajustes de copy | Você + modelo | médio |
+
+5. A partir daí, novas variantes só entram **quando uma página real pedir**.
+6. **Regra dos dois:** se o mesmo ajuste for pedido em 2 clientes, vira opção ou variante do sistema.
+
+**Resumo:** corrija contratos com o piloto, congele a v1 e use a rotina por IDs. Expanda só por demanda real.
+
+---
+
+## 15. Quando o cliente pede algo fora do catálogo
+
+| Situação | O que fazer |
+|---|---|
+| Ajuste visual pequeno (cor de um botão, espaçamento) | `clientes/<nome>/custom.css`, só com sobrescritas |
+| Um campo a mais numa seção | Campo **opcional** no `schema.json` (versione) |
+| Seção totalmente nova | Crie variante nova pelo roteiro do Passo 4 |
+| Pedido repetido em 2 clientes | Promova para o sistema (variante ou opção) |
+
+`custom.css` **não cria componentes novos**: só ajusta o existente.
+
+**Resumo:** pequeno ajuste vai no `custom.css`; o que se repete entra no sistema.
+
+---
+
+## 16. Sessões, tokens e git
+
+**Por que uma etapa por sessão:** a cada mensagem o modelo relê **toda** a conversa. Sessões longas custam mais e confundem. Sessões curtas começam leves lendo só `CLAUDE.md` e `PROGRESSO.md`.
+
+**Abertura de toda sessão:**
+
+```text
+Leia o CLAUDE.md e o PROGRESSO.md e faça a próxima etapa.
+```
+
+**Fechamento de toda sessão:**
+
+```text
+Atualize o PROGRESSO.md (feito, decisões, próximo) e faça o commit desta etapa.
+```
+
+**O que vai no `PROGRESSO.md`:**
+- **Feito:** o que já funciona.
+- **Decisões:** escolhas que não podem ser refeitas (ex.: campos do schema do hero).
+- **Próximo:** qual é a próxima etapa.
+
+**Boas práticas de custo:**
+- Modelo mais capaz na fundação e nos contratos; mais barato para derivar variantes depois que o contrato existe.
+- Verificação visual consolidada: uma imagem do catálogo em vez de dezenas de prints.
+- O modelo **não abre** os arquivos das variantes se só vai montar uma página: lê `INDEX.md` e os `schema.json`.
+- Mantenha o `CLAUDE.md` com menos de 100 linhas.
+
+**Atenção às regras globais:** suas regras do Claude (`~/.claude/rules`) podem exigir TDD com 80% de cobertura e agentes de revisão a cada mudança. Neste projeto o `CLAUDE.md` declara que a verificação é `build.mjs` + `qa.mjs`, e que testes automatizados cobrem apenas `build.mjs`, `qa.mjs` e `gerar-paleta.mjs`.
+
+**Resumo:** uma etapa por sessão, `PROGRESSO.md` como memória, commit ao fechar.
+
+---
+
+## 17. Comandos de referência
+
+**Git (rode separados no PowerShell do Windows 5.1):**
+
+```bash
+git status
+```
+
+```bash
+git add .
+```
+
+```bash
+git commit -m "feat: descrição"
+```
+
+```bash
+git log --oneline
+```
+
+```bash
+git tag v1
+```
+
+**Sistema** (nomes e argumentos exatos dependem do `build.mjs` criado na Fase 0; confirme lá):
+
+```bash
+node build.mjs clientes/<nome>
+```
+
+```bash
+node qa.mjs clientes/<nome>
+```
+
+**Ferramentas:**
+
+```bash
+node -v
+```
+
+```bash
+git --version
+```
+
+**Resumo:** git para histórico, `build` e `qa` para gerar e verificar.
+
+---
+
+## 18. Problemas comuns
+
+| Sintoma | Causa provável | Solução |
 |---|---|---|
-| 1 | Fundação: build + `hero-a` | Atualiza `PROGRESSO.md` e commita |
-| 2 | QA automático | idem |
-| 3 | Variante base de como-funciona e cards | idem |
-| 4 | Piloto com cliente real | idem |
+| `&&` dá erro no PowerShell | PowerShell 5.1 não aceita `&&` | Rode os comandos em linhas separadas |
+| `Author identity unknown` | git sem nome e e-mail | `git config --global user.name` e `user.email` |
+| `nothing to commit` | Nada foi alterado ou já foi commitado | `git status` e `git log` |
+| `not a git repository` | Pasta errada ou falta `git init` | `cd` para a pasta certa, `git init` |
+| Screenshot em branco | Painel oculto do app não renderiza | Usar Chrome headless |
+| Efeito de rolagem não aparece no print | Conteúdo depende de animação para ficar visível | Conteúdo deve ser visível sem animação |
+| Build falha com campo vazio | Comportamento esperado | Preencher o campo no `pagina.yaml` |
+| Variante nova quebra outras | Schema alterado | Versionar o schema e revisar a seção toda |
+| Páginas parecidas demais | Pouca variedade de tokens | Usar mais estilos, tipografias e `custom.css` |
+| Modelo propõe framework | Tendência a "robustecer" | Recusar; manter HTML/CSS estático |
 
-Abertura de cada sessão: *"Leia o CLAUDE.md e o PROGRESSO.md e faça a próxima etapa."*
-
-**Resumo:** modelo forte na fundação, mais barato nas variantes; sessões curtas com progresso registrado; QA por script; git por etapa; piloto antes de expandir.
-
----
-
-## 11. Roadmap por fases
-
-| Fase | Entrega | Pronto quando |
-|---|---|---|
-| 0 | Estrutura, `build.mjs`, `qa.mjs`, `gerar-paleta.mjs`, tokens base | Uma página mínima com 1 hero builda e passa no QA |
-| 1 | 1 variante base de cada seção + schemas + `INDEX.md` | Uma página completa gerada só por spec |
-| 2 | Piloto com 1 ou 2 clientes reais | Publica sem retrabalho estrutural |
-| 3 | Demais variantes + catálogo | Catálogo gerado e tudo passando no QA |
-| 4 | Esquemas por nicho + `/nova-pagina` | Briefing vira página em uma sessão curta |
-
-Estimativa: de 6 a 10 sessões para chegar a algo utilizável (depende do nível de exigência visual).
-
-**Resumo:** cinco fases; a decisão de ampliar variantes só vem depois do piloto real.
+**Resumo:** a maioria dos erros é de ambiente (PowerShell, git) ou de contrato (schema). Ambos têm solução simples.
 
 ---
 
-## 12. Como iniciar (passo a passo)
+## 19. Limites do sistema
 
-### Antes do novo chat
+- **Fotos e textos** continuam sendo o gargalo; o sistema acelera layout, não conteúdo.
+- **Variantes nunca usadas** viram peso morto: corte.
+- **Páginas parecidas:** o risco cai com tokens, estilos e `custom.css`, mas não some.
+- **Mudança incompatível de componente** exige versionar o schema.
+- **SEO e performance** entram desde a Fase 0 (meta tags, Open Graph, dados estruturados, peso das imagens), porque corrigir depois, página a página, custa muito mais.
+- **Personalizar tudo é o caminho mais caro:** muitas variantes com várias rodadas cada exigem muitas sessões. Priorize as seções de uso universal.
+- **Começar pelas variantes visuais** (a parte divertida) sem build, schema e QA gera arquivos soltos. Respeite a ordem.
 
-1. **Conferir ferramentas** (Node 18+, git, Chrome ou Edge):
-   ```bash
-   node -v
-   git --version
-   ```
-2. **Criar pasta e repositório:**
-   ```bash
-   mkdir "D:\CLAUDE PROJECTS\design-system-lp"
-   cd "D:\CLAUDE PROJECTS\design-system-lp"
-   git init
-   ```
-3. **Decidir três coisas** (para o modelo não perguntar nem inventar):
-   - nicho inicial (sugestão: um só, ex.: advocacia);
-   - CTA padrão (ex.: WhatsApp com mensagem pré-preenchida);
-   - 2 ou 3 referências visuais de páginas que você acha boas.
-4. **Criar o `CLAUDE.md`** (curto, ver modelo no arquivo do projeto).
-5. **Criar o `PROGRESSO.md`** com decisões, feito e próximo.
-6. **Primeiro commit** (no PowerShell do Windows 5.1 o `&&` não funciona; rode separado):
-   ```bash
-   git add .
-   git commit -m "chore: base do design system"
-   ```
-   Se der `Author identity unknown`, configure uma vez:
-   ```bash
-   git config --global user.name "Seu Nome"
-   git config --global user.email "seu@email.com"
-   ```
-
-### No novo chat
-
-Abra a sessão **dentro** da pasta `design-system-lp` (é assim que o `CLAUDE.md` carrega) e cole:
-
-> Leia o CLAUDE.md e o PROGRESSO.md. Fase 0, só isto: crie a estrutura de pastas, `tokens/base.css` (escala de espaçamento, tipografia e uma paleta de teste com os tokens semânticos), `build.mjs` (lê `clientes/<nome>/pagina.yaml`, valida contra o `schema.json`, monta o HTML em `dist/` e falha com campos vazios), a seção `hero-a` com schema, e `clientes/teste/pagina.yaml`. Não crie outras variantes nem o QA ainda. Ao final rode o build e me diga o que passou ou falhou. Atualize o PROGRESSO.md.
-
-### Dicas
-- Revise o schema do hero antes de seguir: ele serve de molde para as outras seções.
-- Se o modelo propuser framework, TypeScript ou algo "mais robusto", recuse. A simplicidade é o que economiza tokens aqui.
-- Traga dúvidas de arquitetura para uma conversa de consultoria separada; o chat de execução fica só com a execução.
-
-**Resumo:** conferir ferramentas, criar pasta e git, decidir nicho/CTA/referências, criar `CLAUDE.md` e `PROGRESSO.md`, commitar, abrir novo chat na pasta e colar o prompt da Fase 0.
+**Resumo:** o sistema resolve layout e consistência, não conteúdo nem mídia. Priorize, corte e versione.
 
 ---
 
-## 13. Limites e armadilhas
+## 20. Glossário
 
-- **Imagens e copy continuam sendo o gargalo.** O sistema acelera layout, não fotos do cliente nem aprovação de texto.
-- **Variantes não usadas viram peso morto.** Se após 10 páginas uma variante nunca foi escolhida, corte.
-- **Páginas parecidas.** O risco cai com tokens e pacotes de estilo, mas não some. Permita um CSS opcional por cliente (`clientes/<nome>/`).
-- **Manutenção.** Mudança incompatível de componente exige versionar o schema.
-- **SEO e conversão desde a fase 0.** Meta tags, Open Graph, dados estruturados e performance entram no `base` e no QA; corrigir depois, página a página, custa muito mais.
-- **Começar pelas variantes visuais é o maior risco.** Sem build, schema e QA, você terá arquivos soltos.
-- **Sem piloto real**, os erros de contrato aparecem só depois de todas as variantes prontas.
-
-**Resumo:** o sistema resolve layout e consistência, não conteúdo nem mídia. Corte o que não for usado, permita ajuste por cliente e inclua SEO e performance desde o início.
-
----
-
-## 14. Glossário
-
-- **Token:** variável CSS que guarda uma decisão visual (cor, fonte, raio).
-- **Token semântico:** nomeado pela função (`--accent`), não pela aparência (`--azul`).
-- **Variante:** uma versão estrutural de uma seção (`hero-a`, `hero-b`).
-- **Contrato / schema:** lista dos campos que uma seção aceita; igual para todas as variantes.
-- **Spec (`pagina.yaml`):** arquivo que descreve uma página: tema, IDs das seções e conteúdo.
-- **Build:** script que transforma spec + seções + tokens em HTML final.
-- **Catálogo:** página gerada com todas as variantes, para escolha visual.
-- **INDEX.md:** índice em texto das variantes, lido pelo modelo.
+- **Build:** script que transforma `pagina.yaml` + seções + tokens em HTML final.
+- **Catálogo:** página gerada com todas as variantes, para você escolher visualmente.
+- **Chrome headless:** Chrome rodando sem janela, usado para tirar screenshots e testar.
+- **Contrato / schema:** lista dos campos que uma seção aceita; igual em todas as variantes.
+- **`custom.css`:** sobrescritas pequenas e específicas de um cliente.
+- **`dist/`:** pasta gerada com a página pronta de um cliente.
+- **ID:** nome único de uma variante (`hero-b`), também nome de arquivo.
+- **`INDEX.md`:** lista em texto das variantes, lida pelo modelo.
+- **OKLCH:** espaço de cor que facilita derivar escalas previsíveis.
+- **`pagina.yaml`:** planta da página: tema, IDs e conteúdo.
+- **`PROGRESSO.md`:** registro entre sessões (feito, decisões, próximo).
 - **QA automático:** script que verifica a página sem gastar tokens do modelo.
+- **`prefers-reduced-motion`:** preferência do sistema de quem pede menos animação.
 - **Sessão:** uma conversa com o modelo; o contexto cresce a cada turno.
-- **OKLCH:** espaço de cor que facilita derivar escalas com luminosidade previsível.
-- **WCAG AA:** nível de contraste mínimo de acessibilidade para texto.
+- **Token (design):** variável CSS que guarda uma decisão visual.
+- **Token (IA):** unidade de texto processada pelo modelo; é o que custa.
+- **Token semântico:** nomeado pela função (`--accent`), não pela aparência.
+- **Variante:** versão estrutural de uma seção (`hero-a`, `hero-b`).
+- **WCAG AA:** nível mínimo de contraste de acessibilidade para texto.
